@@ -716,22 +716,28 @@ button { font: inherit; }
 }
 
 .sheet-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(14, 14, 14, 0.32);
   opacity: 0;
   transition: opacity 0.25s ease;
   pointer-events: none;
+  z-index: 40;
 }
 .sheet-backdrop--open {
   opacity: 1;
   pointer-events: auto;
 }
 .sheet {
-  position: absolute;
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
+  max-width: 430px;
+  margin-left: auto;
+  margin-right: auto;
+  height: 75vh;
+  max-height: 640px;
   background: var(--card);
   border-radius: 22px 22px 0 0;
   box-shadow: 0 -10px 40px rgba(14, 14, 14, 0.18);
@@ -740,7 +746,7 @@ button { font: inherit; }
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  max-height: 100%;
+  z-index: 41;
 }
 .sheet--open { transform: translateY(0); }
 .sheet__handle {

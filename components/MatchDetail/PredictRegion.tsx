@@ -62,18 +62,16 @@ export function PredictRegion({ children }: Props) {
           </button>
         )}
       </div>
-      <div style={{ position: "relative" }}>
-        {children}
-        <PredictSheet
-          open={open}
-          onClose={() => setOpen(false)}
-          onSave={(pred) => {
-            setSaved(pred);
-            setOpen(false);
-          }}
-          initial={saved}
-        />
-      </div>
+      {children}
+      <PredictSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        onSave={(pred) => {
+          setSaved(pred);
+          setOpen(false);
+        }}
+        initial={saved}
+      />
     </>
   );
 }

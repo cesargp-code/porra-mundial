@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 
 const NUMBERS = Array.from({ length: 21 }, (_, i) => i);
-const EXTEND_ABOVE = 64;
 
 type Prediction = { home: number; away: number };
 
@@ -31,21 +30,18 @@ export function PredictSheet({ open, onClose, onSave, initial }: Props) {
   }, [open, initial]);
 
   const canSave = home !== null && away !== null;
-  const offsetStyle = { top: -EXTEND_ABOVE };
 
   return (
     <>
       <div
         className={`sheet-backdrop ${open ? "sheet-backdrop--open" : ""}`}
         onClick={onClose}
-        style={offsetStyle}
       />
       <div
         className={`sheet ${open ? "sheet--open" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label="Hacer predicción"
-        style={offsetStyle}
       >
         <div className="sheet__handle" />
         <div className="sheet__head">
