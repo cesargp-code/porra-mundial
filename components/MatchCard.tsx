@@ -81,7 +81,11 @@ export function MatchCard({ match }: { match: UiMatch }) {
         {state === "predicted" && (
           <>
             <span className="compact__time">{timeLabel(match.kickoff)}</span>
-            <GroupPressure ready={match.predictorsReady} total={match.predictorsTotal} />
+            <GroupPressure
+              ready={match.predictorsReady}
+              total={match.predictorsTotal}
+              prediction={match.userPrediction}
+            />
           </>
         )}
         {state === "locked" && (

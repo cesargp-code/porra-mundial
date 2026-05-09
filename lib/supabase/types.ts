@@ -19,3 +19,21 @@ export type DbMatch = {
   status: MatchStatus;
   synced_at: string;
 };
+
+export type DbProfile = {
+  id: string;
+  nickname: string;
+  created_at: string;
+};
+
+export type DbPrediction = {
+  id: string;
+  user_id: string;
+  match_id: string;
+  home_score: number;
+  away_score: number;
+  penalty_winner: string | null;
+  points: number | null;
+  created_at: string;
+  updated_at: string;
+};

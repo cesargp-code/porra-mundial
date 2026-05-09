@@ -1,5 +1,5 @@
 import { dayKey, dayLabel } from "./format";
-import type { DbMatch } from "./supabase/types";
+import type { DbMatch, DbPrediction } from "./supabase/types";
 
 export type CardState = "finished" | "live" | "predicted" | "missing" | "locked";
 
@@ -15,23 +15,36 @@ export type UiMatch = {
   awayScore: number | null;
   stadium: string | null;
   stadiumCity: string | null;
-  // V1 placeholders until predictions/auth land:
   userPoints: number | null;
+  userPrediction: { home: number; away: number } | null;
   predictorsReady: number;
   predictorsTotal: number;
 };
 
-const PLACEHOLDER_TOTAL_PLAYERS = 9;
+export type MatchListContext = {
+  myPredictions: Map<string, DbPrediction>; // keyed by match_id
+  predictorCounts: Map<string, number>; // keyed by match_id
+  totalPlayers: number;
+};
 
-export function toUiMatch(row: DbMatch): UiMatch {
+const EMPTY_CONTEXT: MatchListContext = {
+  myPredictions: new Map(),
+  predictorCounts: new Map(),
+  totalPlayers: 0,
+};
+
+export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): UiMatch {
   const homeMissing = !row.home_team || !row.home_team_code;
   const awayMissing = !row.away_team || !row.away_team_code;
   const tbd = homeMissing || awayMissing;
+
+  const mine = ctx.myPredictions.get(row.id) ?? null;
 
   let state: CardState;
   if (row.status === "completed") state = "finished";
   else if (row.status === "live") state = "live";
   else if (tbd) state = "locked";
+  else if (mine) state = "predicted";
   else state = "missing";
 
   return {
@@ -46,9 +59,12 @@ export function toUiMatch(row: DbMatch): UiMatch {
     awayScore: row.away_score,
     stadium: row.stadium,
     stadiumCity: row.stadium_city,
-    userPoints: null,
-    predictorsReady: 0,
-    predictorsTotal: PLACEHOLDER_TOTAL_PLAYERS,
+    userPoints: mine?.points ?? null,
+    userPrediction: mine
+      ? { home: mine.home_score, away: mine.away_score }
+      : null,
+    predictorsReady: ctx.predictorCounts.get(row.id) ?? 0,
+    predictorsTotal: ctx.totalPlayers,
   };
 }
 

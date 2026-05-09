@@ -11,9 +11,18 @@ type Props = {
   onClose: () => void;
   onSave: (pred: Prediction) => void;
   initial?: Prediction | null;
+  saving?: boolean;
+  error?: string | null;
 };
 
-export function PredictSheet({ open, onClose, onSave, initial }: Props) {
+export function PredictSheet({
+  open,
+  onClose,
+  onSave,
+  initial,
+  saving = false,
+  error = null,
+}: Props) {
   const [home, setHome] = useState<number | null>(null);
   const [away, setAway] = useState<number | null>(null);
   const homeRef = useRef<HTMLDivElement>(null);
@@ -29,7 +38,7 @@ export function PredictSheet({ open, onClose, onSave, initial }: Props) {
     });
   }, [open, initial]);
 
-  const canSave = home !== null && away !== null;
+  const canSave = home !== null && away !== null && !saving;
 
   return (
     <>
@@ -55,9 +64,10 @@ export function PredictSheet({ open, onClose, onSave, initial }: Props) {
               if (home !== null && away !== null) onSave({ home, away });
             }}
           >
-            Guardar predicción
+            {saving ? "Guardando…" : "Guardar predicción"}
           </button>
         </div>
+        {error && <div className="sheet__error">{error}</div>}
         <div className="sheet__body">
           <div className="sheet__col">
             <div className="sheet__numbers" ref={homeRef}>

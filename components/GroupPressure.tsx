@@ -2,10 +2,12 @@ export function GroupPressure({
   ready,
   total,
   missingYou,
+  prediction,
 }: {
   ready: number;
   total: number;
   missingYou?: boolean;
+  prediction?: { home: number; away: number } | null;
 }) {
   const pct = total > 0 ? Math.min(100, Math.round((ready / total) * 100)) : 0;
   return (
@@ -15,6 +17,14 @@ export function GroupPressure({
       </div>
       <div className="pressure__txt">
         <strong>{ready}</strong>/{total} {missingYou ? "ya jugaron · faltas tú" : "ya jugaron"}
+        {prediction ? (
+          <>
+            {" · "}
+            <strong>
+              {prediction.home} - {prediction.away}
+            </strong>
+          </>
+        ) : null}
       </div>
     </div>
   );

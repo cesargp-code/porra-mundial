@@ -1,5 +1,5 @@
 import { Flag, teamLabel } from "../flags/index";
-import type { DetailState } from "./placeholderPlayers";
+import type { DetailState } from "./types";
 
 type Props = {
   matchId: string;

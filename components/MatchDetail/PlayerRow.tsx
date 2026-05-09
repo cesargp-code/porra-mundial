@@ -3,7 +3,7 @@ import type {
   FinishedOrLivePlay,
   Player,
   UpcomingPlay,
-} from "./placeholderPlayers";
+} from "./types";
 
 type Props = {
   player: Player;

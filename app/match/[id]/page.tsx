@@ -1,26 +1,29 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { DetailTopbar } from "@/components/MatchDetail/DetailTopbar";
 import { Hero } from "@/components/MatchDetail/Hero";
-import {
-  GROUP,
-  PLAYS_FINISHED,
-  PLAYS_LIVE,
-  PLAYS_UPCOMING,
-  type DetailState,
-  type FinishedOrLivePlay,
-  type UpcomingPlay,
-} from "@/components/MatchDetail/placeholderPlayers";
 import { PlayerRow } from "@/components/MatchDetail/PlayerRow";
 import { PredictRegion } from "@/components/MatchDetail/PredictRegion";
+import type {
+  DetailState,
+  FinishedOrLivePlay,
+  Player,
+  UpcomingPlay,
+} from "@/components/MatchDetail/types";
 import { venueLabel, whenLabel } from "@/lib/format";
 import { toUiMatch } from "@/lib/matches";
-import { getMatchById } from "@/lib/supabase/server";
+import {
+  getCurrentUserId,
+  getMatchById,
+  getMyPredictionForMatch,
+  getPredictionsForMatch,
+  getPredictorIdsForMatch,
+  getProfiles,
+} from "@/lib/supabase/server";
 
 export const revalidate = 60;
 
-// Dev-only canonical scores so a forced state has something to render against
-// the placeholder plays. Match the design fixtures so PLAYS_*.exact rows light up.
+// Dev-only canonical scores so a forced state has something to render against.
 const DEV_SCORES: Record<"finished" | "live", { home: number; away: number }> = {
   finished: { home: 3, away: 1 },
   live: { home: 2, away: 0 },
@@ -40,8 +43,14 @@ export default async function MatchDetailPage({
   searchParams: Promise<{ state?: string }>;
 }) {
   const [{ id }, { state: stateParam }] = await Promise.all([params, searchParams]);
-  const row = await getMatchById(id);
+
+  const [row, currentUserId, profiles] = await Promise.all([
+    getMatchById(id),
+    getCurrentUserId(),
+    getProfiles(),
+  ]);
   if (!row) notFound();
+  if (!currentUserId) redirect("/login");
   const match = toUiMatch(row);
   if (match.state === "locked") notFound();
 
@@ -64,24 +73,62 @@ export default async function MatchDetailPage({
       ? { home: homeScore, away: awayScore }
       : null;
 
-  const scoredPlays =
-    detailState === "finished"
-      ? PLAYS_FINISHED
-      : detailState === "live"
-        ? PLAYS_LIVE
-        : null;
+  const players: Player[] = profiles.map((p) => ({
+    id: p.id,
+    name: p.nickname,
+    you: p.id === currentUserId,
+  }));
+
+  let scoredPlays: Record<string, FinishedOrLivePlay> | null = null;
+  let upcomingPlays: Record<string, UpcomingPlay> | null = null;
+  let myPrediction: { home: number; away: number } | null = null;
+
+  if (detailState === "upcoming") {
+    const [predictorIds, mine] = await Promise.all([
+      getPredictorIdsForMatch(id),
+      getMyPredictionForMatch(id, currentUserId),
+    ]);
+    const ready = new Set(predictorIds);
+    upcomingPlays = Object.fromEntries(
+      players.map((p) => [p.id, { ready: ready.has(p.id) }])
+    );
+    if (mine) myPrediction = { home: mine.home_score, away: mine.away_score };
+  } else {
+    const predictions = await getPredictionsForMatch(id);
+    scoredPlays = Object.fromEntries(
+      predictions.map((p) => [
+        p.user_id,
+        {
+          guess: { home: p.home_score, away: p.away_score },
+          points: p.points ?? 0,
+        },
+      ])
+    );
+    const mine = predictions.find((p) => p.user_id === currentUserId);
+    if (mine) myPrediction = { home: mine.home_score, away: mine.away_score };
+  }
 
   const playFor = (playerId: string): FinishedOrLivePlay | UpcomingPlay | undefined =>
-    scoredPlays ? scoredPlays[playerId] : PLAYS_UPCOMING[playerId];
+    scoredPlays ? scoredPlays[playerId] : upcomingPlays?.[playerId];
 
-  const sortedPlayers = [...GROUP].sort((a, b) => {
+  const sortedPlayers = [...players].sort((a, b) => {
     if (scoredPlays) {
-      return (scoredPlays[b.id]?.points ?? 0) - (scoredPlays[a.id]?.points ?? 0);
+      // In live/finished: only show players who actually predicted; sort by points desc.
+      const ap = scoredPlays[a.id];
+      const bp = scoredPlays[b.id];
+      if (!ap && !bp) return 0;
+      if (!ap) return 1;
+      if (!bp) return -1;
+      return bp.points - ap.points;
     }
-    const ra = PLAYS_UPCOMING[a.id]?.ready ? 0 : 1;
-    const rb = PLAYS_UPCOMING[b.id]?.ready ? 0 : 1;
+    const ra = upcomingPlays?.[a.id]?.ready ? 0 : 1;
+    const rb = upcomingPlays?.[b.id]?.ready ? 0 : 1;
     return ra - rb;
   });
+
+  const visiblePlayers = scoredPlays
+    ? sortedPlayers.filter((p) => scoredPlays?.[p.id])
+    : sortedPlayers;
 
   return (
     <div className="screen" data-screen-label={`Detail · ${detailState}`}>
@@ -102,10 +149,10 @@ export default async function MatchDetailPage({
           awayScore={awayScore}
         />
         {detailState === "upcoming" ? (
-          <PredictRegion>
+          <PredictRegion matchId={match.id} initial={myPrediction}>
             <div className="hero__divider" />
             <div className="players players--embedded">
-              {sortedPlayers.map((p) => (
+              {visiblePlayers.map((p) => (
                 <PlayerRow
                   key={p.id}
                   player={p}
@@ -120,7 +167,7 @@ export default async function MatchDetailPage({
           <>
             <div className="hero__divider" />
             <div className="players players--embedded">
-              {sortedPlayers.map((p) => (
+              {visiblePlayers.map((p) => (
                 <PlayerRow
                   key={p.id}
                   player={p}

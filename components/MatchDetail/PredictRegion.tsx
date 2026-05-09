@@ -1,18 +1,40 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition, type ReactNode } from "react";
+
+import { savePrediction } from "@/app/match/[id]/actions";
 
 import { PredictSheet } from "./PredictSheet";
 
 type Prediction = { home: number; away: number };
 
 type Props = {
+  matchId: string;
+  initial: Prediction | null;
   children: ReactNode;
 };
 
-export function PredictRegion({ children }: Props) {
+export function PredictRegion({ matchId, initial, children }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [saved, setSaved] = useState<Prediction | null>(null);
+  const [saved, setSaved] = useState<Prediction | null>(initial);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSave(pred: Prediction) {
+    setError(null);
+    startTransition(async () => {
+      const result = await savePrediction(matchId, pred.home, pred.away);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setSaved(pred);
+      setOpen(false);
+      router.refresh();
+    });
+  }
 
   return (
     <>
@@ -65,12 +87,14 @@ export function PredictRegion({ children }: Props) {
       {children}
       <PredictSheet
         open={open}
-        onClose={() => setOpen(false)}
-        onSave={(pred) => {
-          setSaved(pred);
+        onClose={() => {
           setOpen(false);
+          setError(null);
         }}
+        onSave={handleSave}
         initial={saved}
+        saving={isPending}
+        error={error}
       />
     </>
   );

@@ -1,16 +1,40 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import { DayHeader } from "@/components/DayHeader";
 import { MatchCard } from "@/components/MatchCard";
-import { groupByDay, toUiMatch } from "@/lib/matches";
-import { getMatches } from "@/lib/supabase/server";
+import { groupByDay, toUiMatch, type MatchListContext } from "@/lib/matches";
+import {
+  getCurrentUserId,
+  getMatches,
+  getMyPredictions,
+  getPredictorCounts,
+  getProfiles,
+} from "@/lib/supabase/server";
 
 export const revalidate = 60;
 
 export default async function MatchListPage() {
-  const rows = await getMatches();
-  const groups = groupByDay(rows.map(toUiMatch));
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
 
-  const rank = 3;
-  const points = 147;
+  const [rows, profiles, myPredictions, predictorCounts] = await Promise.all([
+    getMatches(),
+    getProfiles(),
+    getMyPredictions(userId),
+    getPredictorCounts(),
+  ]);
+
+  const ctx: MatchListContext = {
+    myPredictions: new Map(myPredictions.map((p) => [p.match_id, p])),
+    predictorCounts,
+    totalPlayers: profiles.length,
+  };
+
+  const groups = groupByDay(rows.map((r) => toUiMatch(r, ctx)));
+
+  const totalPoints = myPredictions.reduce((sum, p) => sum + (p.points ?? 0), 0);
+  const rank = 1; // leaderboard not implemented yet
 
   return (
     <div className="screen" data-screen-label="01 Match List">
@@ -19,14 +43,14 @@ export default async function MatchListPage() {
           Porra Mundial
           <small>2026 · Poligoneros</small>
         </div>
-        <button
-          type="button"
+        <Link
+          href="/me"
           className="rank-link"
-          aria-label={`Ver clasificación — vas ${rank}º con ${points} puntos`}
+          aria-label={`Cuenta — vas ${rank}º con ${totalPoints} puntos`}
         >
           <span className="rank-link__pos"><b>{rank}º</b></span>
           <span className="rank-link__sep" aria-hidden="true" />
-          <span className="rank-link__pts"><b>{points}</b> pts</span>
+          <span className="rank-link__pts"><b>{totalPoints}</b> pts</span>
           <span className="rank-link__chev" aria-hidden="true">
             <svg
               width="14"
@@ -41,7 +65,7 @@ export default async function MatchListPage() {
               <polyline points="9 6 15 12 9 18" />
             </svg>
           </span>
-        </button>
+        </Link>
       </header>
 
       {groups.map((g) => (
