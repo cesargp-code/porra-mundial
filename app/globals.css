@@ -38,7 +38,6 @@ button { font: inherit; }
   min-height: 100vh;
   background: var(--bg);
   position: relative;
-  padding-top: 14px;
   padding-bottom: 24px;
 }
 
@@ -737,7 +736,7 @@ button { font: inherit; }
   margin-left: auto;
   margin-right: auto;
   height: 75vh;
-  max-height: 640px;
+  max-height: min(640px, calc(100dvh - 280px));
   background: var(--card);
   border-radius: 22px 22px 0 0;
   box-shadow: 0 -10px 40px rgba(14, 14, 14, 0.18);
@@ -758,18 +757,12 @@ button { font: inherit; }
 }
 .sheet__head {
   padding: 12px 18px 14px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  justify-content: space-between;
+  justify-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--line-2);
-}
-.sheet__title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-2);
 }
 .sheet__save {
   padding: 10px 16px;
@@ -791,18 +784,23 @@ button { font: inherit; }
   cursor: not-allowed;
 }
 .sheet__close {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
+  padding: 10px 16px;
   background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--ink-3);
   cursor: pointer;
+  letter-spacing: 0.01em;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
 }
+.sheet__close:active { transform: scale(0.96); }
 .sheet__body {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -861,16 +859,27 @@ button { font: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
   transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
-.sheet__num:hover {
-  color: var(--ink-2);
-  border-color: #c8c8c2;
+.sheet__num:focus,
+.sheet__num:focus-visible {
+  outline: none;
 }
-.sheet__num--selected {
-  background: var(--ink);
-  color: #fff;
-  border-color: var(--ink);
+@media (hover: hover) {
+  .sheet__num:hover {
+    color: var(--ink-2);
+    border-color: #c8c8c2;
+  }
+}
+.sheet__num--selected,
+.sheet__num--selected:hover,
+.sheet__num--selected:focus,
+.sheet__num--selected:focus-visible {
+  background: var(--lime);
+  color: var(--ink);
+  border-color: var(--lime);
   font-size: 26px;
   font-weight: 800;
   transform: scale(1.04);

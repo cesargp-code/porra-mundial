@@ -15,9 +15,16 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(`${origin}${next}`);
+    console.error("[auth/callback] exchangeCodeForSession failed:", error);
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     if (!error) return NextResponse.redirect(`${origin}${next}`);
+    console.error("[auth/callback] verifyOtp failed:", error);
+  } else {
+    console.error(
+      "[auth/callback] no code/token_hash in URL. Search params:",
+      Object.fromEntries(searchParams.entries())
+    );
   }
 
   const url = new URL("/login", origin);

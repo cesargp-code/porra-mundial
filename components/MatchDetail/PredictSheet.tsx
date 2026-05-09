@@ -45,21 +45,9 @@ export function PredictSheet({ open, onClose, onSave, initial }: Props) {
       >
         <div className="sheet__handle" />
         <div className="sheet__head">
-          <button className="sheet__close" onClick={onClose} aria-label="Cerrar">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            >
-              <line x1="6" y1="6" x2="18" y2="18" />
-              <line x1="18" y1="6" x2="6" y2="18" />
-            </svg>
+          <button type="button" className="sheet__close" onClick={onClose}>
+            Cerrar
           </button>
-          <div className="sheet__title">Tu predicción</div>
           <button
             className="sheet__save"
             disabled={!canSave}
