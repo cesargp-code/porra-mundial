@@ -118,6 +118,20 @@ export async function getPredictorCounts(): Promise<Map<string, number>> {
   return new Map(rows.map((r) => [r.match_id, r.n]));
 }
 
+export async function getPointsByUser(): Promise<Map<string, number>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("predictions")
+    .select("user_id, points");
+
+  if (error) throw new Error(`Failed to load points: ${error.message}`);
+  const totals = new Map<string, number>();
+  for (const row of (data ?? []) as { user_id: string; points: number | null }[]) {
+    totals.set(row.user_id, (totals.get(row.user_id) ?? 0) + (row.points ?? 0));
+  }
+  return totals;
+}
+
 export async function getMyPredictions(userId: string): Promise<DbPrediction[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
