@@ -16,6 +16,9 @@ next-env.d.ts
 .DS_Store
 .vercel
 
+# Local scratch
+things/
+
 # Claude Code / agents (local tooling state)
 .claude/settings.local.json
 .claude/skills/

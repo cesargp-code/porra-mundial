@@ -1,21 +1,37 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 import type { DbMatch } from "./types";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+type CookieToSet = { name: string; value: string; options: CookieOptions };
 
-if (!url || !key) {
-  throw new Error(
-    "Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY in environment."
+export async function createClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet: CookieToSet[]) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Called from a Server Component — middleware will refresh the session.
+          }
+        },
+      },
+    }
   );
 }
 
-export const supabase = createClient(url, key, {
-  auth: { persistSession: false },
-});
-
 export async function getMatches(): Promise<DbMatch[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("matches")
     .select("*")
@@ -26,6 +42,7 @@ export async function getMatches(): Promise<DbMatch[]> {
 }
 
 export async function getMatchById(id: string): Promise<DbMatch | null> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("matches")
     .select("*")
