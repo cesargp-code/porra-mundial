@@ -1,27 +1,16 @@
 import { DayHeader } from "@/components/DayHeader";
 import { MatchCard } from "@/components/MatchCard";
 import { groupByDay, toUiMatch } from "@/lib/matches";
-import { createClient, getMatches } from "@/lib/supabase/server";
+import { getMatches } from "@/lib/supabase/server";
 
 export const revalidate = 60;
 
-function initialsFor(user: { email?: string | null; user_metadata?: Record<string, unknown> } | null): string {
-  if (!user) return "··";
-  const name = (user.user_metadata?.full_name as string | undefined) ?? "";
-  const source = name.trim() || user.email?.split("@")[0] || "";
-  const parts = source.split(/[\s._-]+/).filter(Boolean);
-  const letters = (parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? parts[0]?.[1] ?? "");
-  return letters.toUpperCase() || "··";
-}
-
 export default async function MatchListPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const rows = await getMatches();
   const groups = groupByDay(rows.map(toUiMatch));
+
+  const rank = 3;
+  const points = 147;
 
   return (
     <div className="screen" data-screen-label="01 Match List">
@@ -30,16 +19,29 @@ export default async function MatchListPage() {
           Porra Mundial
           <small>2026 · Poligoneros</small>
         </div>
-        <form action="/auth/signout" method="post">
-          <button
-            type="submit"
-            className="avatar avatar--button"
-            aria-label="Cerrar sesión"
-            title="Cerrar sesión"
-          >
-            {initialsFor(user)}
-          </button>
-        </form>
+        <button
+          type="button"
+          className="rank-link"
+          aria-label={`Ver clasificación — vas ${rank}º con ${points} puntos`}
+        >
+          <span className="rank-link__pos"><b>{rank}º</b></span>
+          <span className="rank-link__sep" aria-hidden="true" />
+          <span className="rank-link__pts"><b>{points}</b> pts</span>
+          <span className="rank-link__chev" aria-hidden="true">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </span>
+        </button>
       </header>
 
       {groups.map((g) => (
