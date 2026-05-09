@@ -65,16 +65,17 @@ export function Hero({
         </div>
       </div>
 
-      <div className="hero__status">
-        {state === "finished" && <span className="pill pill--finished">Terminado</span>}
-        {state === "live" && (
-          <span className="pill pill--live">
-            <span className="pill__dot" />
-            En juego
-          </span>
-        )}
-        {state === "upcoming" && <span className="pill pill--upcoming">Pendiente</span>}
-      </div>
+      {state !== "upcoming" && (
+        <div className="hero__status">
+          {state === "finished" && <span className="pill pill--finished">Terminado</span>}
+          {state === "live" && (
+            <span className="pill pill--live">
+              <span className="pill__dot" />
+              En juego
+            </span>
+          )}
+        </div>
+      )}
     </>
   );
 }

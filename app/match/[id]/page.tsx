@@ -12,6 +12,7 @@ import {
   type UpcomingPlay,
 } from "@/components/MatchDetail/placeholderPlayers";
 import { PlayerRow } from "@/components/MatchDetail/PlayerRow";
+import { PredictRegion } from "@/components/MatchDetail/PredictRegion";
 import { venueLabel, whenLabel } from "@/lib/format";
 import { toUiMatch } from "@/lib/matches";
 import { getMatchById } from "@/lib/supabase/server";
@@ -100,18 +101,37 @@ export default async function MatchDetailPage({
           homeScore={homeScore}
           awayScore={awayScore}
         />
-        <div className="hero__divider" />
-        <div className="players players--embedded">
-          {sortedPlayers.map((p) => (
-            <PlayerRow
-              key={p.id}
-              player={p}
-              state={detailState}
-              play={playFor(p.id)}
-              realScore={realScore}
-            />
-          ))}
-        </div>
+        {detailState === "upcoming" ? (
+          <PredictRegion>
+            <div className="hero__divider" />
+            <div className="players players--embedded">
+              {sortedPlayers.map((p) => (
+                <PlayerRow
+                  key={p.id}
+                  player={p}
+                  state={detailState}
+                  play={playFor(p.id)}
+                  realScore={realScore}
+                />
+              ))}
+            </div>
+          </PredictRegion>
+        ) : (
+          <>
+            <div className="hero__divider" />
+            <div className="players players--embedded">
+              {sortedPlayers.map((p) => (
+                <PlayerRow
+                  key={p.id}
+                  player={p}
+                  state={detailState}
+                  play={playFor(p.id)}
+                  realScore={realScore}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
