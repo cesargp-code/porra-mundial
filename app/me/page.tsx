@@ -1,8 +1,19 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { RankingTabs } from "@/components/RankingTabs";
+import { getCurrentUserId, getProfiles } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default function MePage() {
+export default async function MePage() {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+
+  const profiles = await getProfiles();
+  const me = profiles.find((p) => p.id === userId);
+  const userName = me?.nickname ?? "Tú";
+
   return (
     <div className="screen" data-screen-label="Cuenta">
       <div className="topbar">
@@ -25,13 +36,20 @@ export default function MePage() {
         </div>
       </div>
 
-      <div className="me">
-        <form action="/auth/signout" method="post">
-          <button type="submit" className="auth-button me__signout">
-            Salir
-          </button>
-        </form>
-      </div>
+      <RankingTabs
+        userName={userName}
+        defaultTab="user"
+        rankingContent={null}
+        userContent={
+          <div className="me">
+            <form action="/auth/signout" method="post">
+              <button type="submit" className="auth-button me__signout">
+                Salir
+              </button>
+            </form>
+          </div>
+        }
+      />
     </div>
   );
 }
