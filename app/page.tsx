@@ -46,7 +46,7 @@ export default async function MatchListPage() {
         <Link
           href="/me"
           className="rank-link"
-          aria-label={`Cuenta — vas ${rank}º con ${totalPoints} puntos`}
+          aria-label={`Fan Zone — vas ${rank}º con ${totalPoints} puntos`}
         >
           <span className="rank-link__pos"><b>{rank}º</b></span>
           <span className="rank-link__sep" aria-hidden="true" />

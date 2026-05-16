@@ -8,8 +8,7 @@ export function PointsLine({
   if (value === null) {
     return (
       <span className="points">
-        <strong>—</strong>
-        <span className="points__lbl">{provisional ? "pts prov." : "pts"}</span>
+        <span className="points__lbl">No jugaste</span>
       </span>
     );
   }

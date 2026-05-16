@@ -147,6 +147,21 @@ export async function getPointsByUser(): Promise<Map<string, number>> {
   return totals;
 }
 
+export async function getAllPredictions(): Promise<
+  Pick<DbPrediction, "user_id" | "match_id" | "home_score" | "away_score">[]
+> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("predictions")
+    .select("user_id, match_id, home_score, away_score");
+
+  if (error) throw new Error(`Failed to load predictions: ${error.message}`);
+  return (data ?? []) as Pick<
+    DbPrediction,
+    "user_id" | "match_id" | "home_score" | "away_score"
+  >[];
+}
+
 export async function getMyPredictions(userId: string): Promise<DbPrediction[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
