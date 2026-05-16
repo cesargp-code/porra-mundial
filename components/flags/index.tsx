@@ -657,3 +657,62 @@ export function teamLabel(code: string | null | undefined, fallback: string): st
   if (code && TEAM_NAMES_ES[code]) return TEAM_NAMES_ES[code];
   return fallback;
 }
+
+// Short Spanish abbreviations — used where the full name doesn't fit (e.g.
+// compact buttons). Falls back to the FIFA code or the supplied fallback.
+export const TEAM_CODES_ES: Record<string, string> = {
+  ALG: "AGL",
+  ARG: "ARG",
+  AUS: "AUS",
+  AUT: "AUT",
+  BEL: "BEL",
+  BIH: "BOS",
+  BRA: "BRA",
+  CAN: "CAN",
+  CIV: "CMA",
+  COD: "RDC",
+  COL: "COL",
+  CPV: "CVE",
+  CRO: "CRO",
+  CUW: "CUR",
+  CZE: "CHQ",
+  ECU: "ECU",
+  EGY: "EGI",
+  ENG: "ING",
+  ESP: "ESP",
+  FRA: "FRA",
+  GER: "ALE",
+  GHA: "GHA",
+  HAI: "HAI",
+  IRN: "IRN",
+  IRQ: "IRK",
+  JOR: "JOR",
+  JPN: "JPN",
+  KOR: "COR",
+  KSA: "ARS",
+  MAR: "MAR",
+  MEX: "MEX",
+  NED: "PBJ",
+  NOR: "NOR",
+  NZL: "NZL",
+  PAN: "PAN",
+  PAR: "PAR",
+  POR: "POR",
+  QAT: "CAT",
+  RSA: "SUD",
+  SCO: "ESC",
+  SEN: "SEN",
+  SUI: "SUI",
+  SWE: "SUE",
+  TUN: "TUN",
+  TUR: "TUR",
+  UAE: "EAU",
+  URU: "URU",
+  USA: "USA",
+  UZB: "UZB",
+};
+
+export function teamCode(code: string | null | undefined, fallback: string): string {
+  if (code && TEAM_CODES_ES[code]) return TEAM_CODES_ES[code];
+  return code ?? fallback;
+}

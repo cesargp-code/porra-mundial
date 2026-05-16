@@ -213,7 +213,6 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   font-size: 11px;
   color: var(--ink-3);
   font-weight: 500;
-  text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
@@ -431,6 +430,17 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   flex-shrink: 0;
 }
 .iconbtn:active { transform: scale(0.94); }
+.iconbtn__spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-top-color: currentColor;
+  animation: iconbtn-spin 0.7s linear infinite;
+}
+@keyframes iconbtn-spin {
+  to { transform: rotate(360deg); }
+}
 
 /* Hero card + embedded players list */
 .hero {
@@ -966,6 +976,10 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   font-size: 26px;
   font-weight: 800;
   transform: scale(1.04);
+}
+.sheet__num:active,
+.sheet__num--selected:active {
+  transform: scale(0.96);
 }
 .sheet__error {
   padding: 10px 18px;

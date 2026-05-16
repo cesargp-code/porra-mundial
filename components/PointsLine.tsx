@@ -16,7 +16,7 @@ export function PointsLine({
   return (
     <span className="points">
       <strong>{value > 0 ? `+${value}` : value}</strong>
-      <span className="points__lbl">{provisional ? "pts prov." : "pts"}</span>
+      <span className="points__lbl">{provisional ? "pts" : "pts"}</span>
     </span>
   );
 }
