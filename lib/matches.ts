@@ -1,4 +1,5 @@
 import { dayKey, dayLabel } from "./format";
+import { computePoints } from "./scoring";
 import type { DbMatch, DbPrediction } from "./supabase/types";
 
 export type CardState = "finished" | "live" | "predicted" | "missing" | "locked";
@@ -47,6 +48,25 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
   else if (mine) state = "predicted";
   else state = "missing";
 
+  // For 'live' the DB trigger hasn't persisted points yet — show preliminary
+  // points based on the current score. For 'finished' use the stored value.
+  const userPoints = mine
+    ? state === "live"
+      ? computePoints({
+          round: row.round,
+          homeScore: row.home_score,
+          awayScore: row.away_score,
+          homePen: row.home_pen,
+          awayPen: row.away_pen,
+          predHome: mine.home_score,
+          predAway: mine.away_score,
+          predPenWinner: mine.penalty_winner,
+          homeTeam: row.home_team,
+          awayTeam: row.away_team,
+        })
+      : (mine.points ?? null)
+    : null;
+
   return {
     id: row.id,
     state,
@@ -59,7 +79,7 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
     awayScore: row.away_score,
     stadium: row.stadium,
     stadiumCity: row.stadium_city,
-    userPoints: mine?.points ?? null,
+    userPoints,
     userPrediction: mine
       ? { home: mine.home_score, away: mine.away_score }
       : null,

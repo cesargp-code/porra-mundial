@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { teamLabel } from "@/components/flags";
+
 const NUMBERS = Array.from({ length: 21 }, (_, i) => i);
 
-type Prediction = { home: number; away: number };
+type Prediction = { home: number; away: number; penWinner: string | null };
 
 type Props = {
   open: boolean;
@@ -13,6 +15,11 @@ type Props = {
   initial?: Prediction | null;
   saving?: boolean;
   error?: string | null;
+  isKnockout?: boolean;
+  homeTeam?: string | null;
+  awayTeam?: string | null;
+  homeCode?: string | null;
+  awayCode?: string | null;
 };
 
 export function PredictSheet({
@@ -22,9 +29,15 @@ export function PredictSheet({
   initial,
   saving = false,
   error = null,
+  isKnockout = false,
+  homeTeam = null,
+  awayTeam = null,
+  homeCode = null,
+  awayCode = null,
 }: Props) {
   const [home, setHome] = useState<number | null>(null);
   const [away, setAway] = useState<number | null>(null);
+  const [manualWinner, setManualWinner] = useState<string | null>(null);
   const homeRef = useRef<HTMLDivElement>(null);
   const awayRef = useRef<HTMLDivElement>(null);
 
@@ -32,13 +45,33 @@ export function PredictSheet({
     if (!open) return;
     setHome(initial?.home ?? null);
     setAway(initial?.away ?? null);
+    setManualWinner(initial?.penWinner ?? null);
     requestAnimationFrame(() => {
       if (homeRef.current) homeRef.current.scrollTop = 0;
       if (awayRef.current) awayRef.current.scrollTop = 0;
     });
   }, [open, initial]);
 
-  const canSave = home !== null && away !== null && !saving;
+  // Show the picker only when knockout AND both teams are known. TBD legs
+  // (e.g. early bracket placeholders) have no buttons to render.
+  const showPicker = isKnockout && !!homeTeam && !!awayTeam;
+  const scoreSet = home !== null && away !== null;
+  const scoreWinner: string | null =
+    scoreSet && home !== null && away !== null
+      ? home > away
+        ? homeTeam
+        : home < away
+          ? awayTeam
+          : null
+      : null;
+  const isDraw = scoreSet && scoreWinner === null;
+  const activeWinner = scoreWinner ?? (isDraw ? manualWinner : null);
+
+  const canSave =
+    scoreSet && !saving && (!showPicker || !isDraw || manualWinner !== null);
+
+  const homeLabel = teamLabel(homeCode, homeTeam ?? "");
+  const awayLabel = teamLabel(awayCode, awayTeam ?? "");
 
   return (
     <>
@@ -61,12 +94,42 @@ export function PredictSheet({
             className="sheet__save"
             disabled={!canSave}
             onClick={() => {
-              if (home !== null && away !== null) onSave({ home, away });
+              if (home !== null && away !== null) {
+                // Only persist a penalty winner when the prediction is a draw
+                // (the only case the scoring engine consults this field).
+                const penWinner = showPicker && isDraw ? manualWinner : null;
+                onSave({ home, away, penWinner });
+              }
             }}
           >
             {saving ? "Guardando…" : "Guardar predicción"}
           </button>
         </div>
+        {showPicker && (
+          <div className="sheet__advance">
+            <span className="sheet__advance-label">Pasa de ronda</span>
+            <div className="sheet__advance-buttons">
+              <button
+                type="button"
+                className={`sheet__advance-btn ${activeWinner === homeTeam ? "sheet__advance-btn--active" : ""}`}
+                onClick={() => isDraw && setManualWinner(homeTeam)}
+                disabled={!isDraw}
+                aria-pressed={activeWinner === homeTeam}
+              >
+                {homeLabel}
+              </button>
+              <button
+                type="button"
+                className={`sheet__advance-btn ${activeWinner === awayTeam ? "sheet__advance-btn--active" : ""}`}
+                onClick={() => isDraw && setManualWinner(awayTeam)}
+                disabled={!isDraw}
+                aria-pressed={activeWinner === awayTeam}
+              >
+                {awayLabel}
+              </button>
+            </div>
+          </div>
+        )}
         {error && <div className="sheet__error">{error}</div>}
         <div className="sheet__body">
           <div className="sheet__col">

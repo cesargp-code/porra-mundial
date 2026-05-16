@@ -12,6 +12,7 @@ import type {
 } from "@/components/MatchDetail/types";
 import { venueLabel, whenLabel } from "@/lib/format";
 import { toUiMatch } from "@/lib/matches";
+import { computePoints } from "@/lib/scoring";
 import {
   getCurrentUserId,
   getMatchById,
@@ -81,7 +82,7 @@ export default async function MatchDetailPage({
 
   let scoredPlays: Record<string, FinishedOrLivePlay> | null = null;
   let upcomingPlays: Record<string, UpcomingPlay> | null = null;
-  let myPrediction: { home: number; away: number } | null = null;
+  let myPrediction: { home: number; away: number; penWinner: string | null } | null = null;
 
   if (detailState === "upcoming") {
     const [predictorIds, mine] = await Promise.all([
@@ -92,20 +93,49 @@ export default async function MatchDetailPage({
     upcomingPlays = Object.fromEntries(
       players.map((p) => [p.id, { ready: ready.has(p.id) }])
     );
-    if (mine) myPrediction = { home: mine.home_score, away: mine.away_score };
+    if (mine)
+      myPrediction = {
+        home: mine.home_score,
+        away: mine.away_score,
+        penWinner: mine.penalty_winner,
+      };
   } else {
     const predictions = await getPredictionsForMatch(id);
     scoredPlays = Object.fromEntries(
-      predictions.map((p) => [
-        p.user_id,
-        {
-          guess: { home: p.home_score, away: p.away_score },
-          points: p.points ?? 0,
-        },
-      ])
+      predictions.map((p) => {
+        // For 'live' the DB trigger hasn't run yet — compute preliminary points
+        // from the current score. For 'finished' use the persisted value.
+        const points =
+          detailState === "live"
+            ? computePoints({
+                round: row.round,
+                homeScore,
+                awayScore,
+                homePen: row.home_pen,
+                awayPen: row.away_pen,
+                predHome: p.home_score,
+                predAway: p.away_score,
+                predPenWinner: p.penalty_winner,
+                homeTeam: row.home_team,
+                awayTeam: row.away_team,
+              }) ?? 0
+            : (p.points ?? 0);
+        return [
+          p.user_id,
+          {
+            guess: { home: p.home_score, away: p.away_score },
+            points,
+          },
+        ];
+      })
     );
     const mine = predictions.find((p) => p.user_id === currentUserId);
-    if (mine) myPrediction = { home: mine.home_score, away: mine.away_score };
+    if (mine)
+      myPrediction = {
+        home: mine.home_score,
+        away: mine.away_score,
+        penWinner: mine.penalty_winner,
+      };
   }
 
   const playFor = (playerId: string): FinishedOrLivePlay | UpcomingPlay | undefined =>
@@ -149,7 +179,15 @@ export default async function MatchDetailPage({
           awayScore={awayScore}
         />
         {detailState === "upcoming" ? (
-          <PredictRegion matchId={match.id} initial={myPrediction}>
+          <PredictRegion
+            matchId={match.id}
+            initial={myPrediction}
+            round={row.round}
+            homeTeam={row.home_team}
+            awayTeam={row.away_team}
+            homeCode={match.homeCode}
+            awayCode={match.awayCode}
+          >
             <div className="hero__divider" />
             <div className="players players--embedded">
               {visiblePlayers.map((p) => (

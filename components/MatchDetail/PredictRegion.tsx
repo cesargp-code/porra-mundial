@@ -7,25 +7,46 @@ import { savePrediction } from "@/app/match/[id]/actions";
 
 import { PredictSheet } from "./PredictSheet";
 
-type Prediction = { home: number; away: number };
+type Prediction = { home: number; away: number; penWinner: string | null };
 
 type Props = {
   matchId: string;
   initial: Prediction | null;
   children: ReactNode;
+  round: string;
+  homeTeam: string | null;
+  awayTeam: string | null;
+  homeCode: string | null;
+  awayCode: string | null;
 };
 
-export function PredictRegion({ matchId, initial, children }: Props) {
+export function PredictRegion({
+  matchId,
+  initial,
+  children,
+  round,
+  homeTeam,
+  awayTeam,
+  homeCode,
+  awayCode,
+}: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [saved, setSaved] = useState<Prediction | null>(initial);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  const isKnockout = round !== "group";
+
   function handleSave(pred: Prediction) {
     setError(null);
     startTransition(async () => {
-      const result = await savePrediction(matchId, pred.home, pred.away);
+      const result = await savePrediction(
+        matchId,
+        pred.home,
+        pred.away,
+        pred.penWinner
+      );
       if (!result.ok) {
         setError(result.error);
         return;
@@ -95,6 +116,11 @@ export function PredictRegion({ matchId, initial, children }: Props) {
         initial={saved}
         saving={isPending}
         error={error}
+        isKnockout={isKnockout}
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+        homeCode={homeCode}
+        awayCode={awayCode}
       />
     </>
   );

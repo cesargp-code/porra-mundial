@@ -18,12 +18,14 @@ export type DbMatch = {
   away_pen: number | null;
   status: MatchStatus;
   synced_at: string;
+  is_test: boolean;
 };
 
 export type DbProfile = {
   id: string;
   nickname: string;
   created_at: string;
+  is_admin: boolean;
 };
 
 export type DbPrediction = {

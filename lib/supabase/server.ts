@@ -64,6 +64,21 @@ export async function getProfiles(): Promise<DbProfile[]> {
   return (data ?? []) as DbProfile[];
 }
 
+export async function getAdminProfile(): Promise<{ id: string; is_admin: boolean } | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, is_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (error) throw new Error(`Failed to load admin profile: ${error.message}`);
+  return (data as { id: string; is_admin: boolean } | null) ?? null;
+}
+
 export async function getCurrentUserId(): Promise<string | null> {
   const supabase = await createClient();
   const {

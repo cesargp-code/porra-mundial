@@ -116,9 +116,14 @@ async function syncMatches() {
     synced_at,
   }));
 
-  const { error } = await sb.from("matches").upsert(rows);
+  // Don't clobber rows the admin has put into test mode.
+  const { data: testRows } = await sb.from("matches").select("id").eq("is_test", true);
+  const testIds = new Set((testRows ?? []).map((r) => r.id as string));
+  const filteredRows = rows.filter((r) => !testIds.has(r.id));
+
+  const { error } = await sb.from("matches").upsert(filteredRows);
   if (error) throw error;
-  return rows.length;
+  return { synced: filteredRows.length, skipped_test: testIds.size };
 }
 
 Deno.serve(async (req) => {
@@ -130,8 +135,8 @@ Deno.serve(async (req) => {
     if (!decision.sync) {
       return Response.json({ skipped: true, ...decision });
     }
-    const count = await syncMatches();
-    return Response.json({ synced: count, ...decision });
+    const result = await syncMatches();
+    return Response.json({ ...result, ...decision });
   } catch (err) {
     return Response.json({ error: String(err) }, { status: 500 });
   }
