@@ -47,7 +47,7 @@ export function ScoringSheet() {
         <div className="scoring-sheet__body">
           <p className="scoring-sheet__intro">
             Cuanto más fina la predicción, más puntos. Acertar el ganador ya
-            suma; clavar el marcador es lo gordo.
+            suma; si clavas el resultado lo petas.
           </p>
 
           <div>
@@ -63,20 +63,20 @@ export function ScoringSheet() {
                 <span>
                   Acertaste quién gana, pero la diferencia se te va por 2 o más
                 </span>
-                <span className="scoring-sheet__pts">2</span>
+                <span className="scoring-sheet__pts">+2</span>
               </li>
               <li className="scoring-sheet__row">
                 <span>Acertaste el ganador y te quedas a un gol de la diferencia</span>
-                <span className="scoring-sheet__pts">3</span>
+                <span className="scoring-sheet__pts">+3</span>
               </li>
               <li className="scoring-sheet__row">
                 <span>Acertaste el ganador y la diferencia de goles exacta</span>
-                <span className="scoring-sheet__pts">4</span>
+                <span className="scoring-sheet__pts">+4</span>
               </li>
               <li className="scoring-sheet__row">
-                <span>Marcador exacto. Ojo de halcón.</span>
+                <span>Marcador exacto</span>
                 <span className="scoring-sheet__pts scoring-sheet__pts--top">
-                  5
+                  +7
                 </span>
               </li>
             </ul>
@@ -125,11 +125,16 @@ export function ScoringSheet() {
               </div>
               <div className="scoring-sheet__mult-row">
                 <span>Final</span>
-                <span className="scoring-sheet__mult-x">×?</span>
+                <span className="scoring-sheet__mult-x">×15</span>
               </div>
             </div>
-            <p className="scoring-sheet__foot">
-              El multiplicador de la final se anunciará antes del partido.
+          </div>
+
+          <div>
+            <div className="scoring-sheet__h">Bonus España</div>
+            <p className="scoring-sheet__p">
+              Cualquier partido con España puntúa el doble: el multiplicador de
+              la ronda se multiplica <b>×2</b>. La final si juega España valdría ×30.
             </p>
           </div>
         </div>

@@ -98,16 +98,16 @@ Predict: `home_score`, `away_score` (90 min, which is the full match).
 | 1    | Correct result, |predicted GD − real GD| ≥ 2 | 2      |
 | 2    | Correct result, |predicted GD − real GD| = 1 | 3      |
 | 3    | Correct result + exact GD                    | 4      |
-| 4    | Exact score                                  | 5      |
+| 4    | Exact score                                  | 7      |
 
 
 Examples:
 
 - Real: 2-0 → predict 1-0: correct result, GD off by 1 → **3 pts**
 - Real: 2-0 → predict 3-0: correct result, exact GD (both 2) → **4 pts**
-- Real: 2-0 → predict 2-0: exact score → **5 pts**
+- Real: 2-0 → predict 2-0: exact score → **7 pts**
 - Real: 1-1 → predict 0-0: correct result (draw), exact GD (both 0) → **4 pts**
-- Real: 1-1 → predict 1-1: exact score → **5 pts**
+- Real: 1-1 → predict 1-1: exact score → **7 pts**
 - Real: 1-0 → predict 0-1: wrong result → **0 pts**
 
 ### Base points — Knockout stage (ET and penalties possible)
@@ -128,14 +128,14 @@ A draw prediction (e.g. 1-1) is valid — it means the player expects the match 
 
 Examples (match ends 1-1 after ET, goes to pens, ARG wins 5-3):
 
-- Predict 1-1 + ARG (correct pen winner): 5 + 2 = **7 pts**
-- Predict 1-1 + BRA (wrong pen winner): 5 + 0 = **5 pts**
+- Predict 1-1 + ARG (correct pen winner): 7 + 2 = **9 pts**
+- Predict 1-1 + BRA (wrong pen winner): 7 + 0 = **7 pts**
 - Predict 0-0 + ARG: 4 (correct result/GD) + 2 = **6 pts**
 - Predict 2-1 (predicted home win, real score is a draw): 0 + 0 = **0 pts**
 
 Examples (match decided in ET, ends 2-1, no penalties):
 
-- Predict 2-1: exact score → **5 pts**
+- Predict 2-1: exact score → **7 pts**
 - Predict 1-0: correct result (home win), GD off by 1 → **3 pts**
 - Predict 1-1 (predicted draw, real result is a home win): 0 pts
 
@@ -146,24 +146,30 @@ Applied to the total points earned for that match (base + penalty bonus).
 
 | Round     | Multiplier | Max pts/match |
 | --------- | ---------- | ------------- |
-| Group     | ×1         | 5             |
-| R32       | ×3         | 15 + 6 pen    |
-| R16       | ×5         | 25 + 10 pen   |
-| QF        | ×8         | 40 + 16 pen   |
-| SF        | ×12        | 60 + 24 pen   |
-| 3rd place | ×6         | 30 + 12 pen   |
-| Final     | ×TBD       | TBD           |
+| Group     | ×1         | 7             |
+| R32       | ×3         | 21 + 6 pen    |
+| R16       | ×5         | 35 + 10 pen   |
+| QF        | ×8         | 56 + 16 pen   |
+| SF        | ×12        | 84 + 24 pen   |
+| 3rd place | ×6         | 42 + 12 pen   |
+| Final     | ×15        | 105 + 30 pen  |
 
 
-**Max possible points (perfect tournament, excluding Final and pens):**
+### Spain bonus
 
-- Group: 48 × 5 = **240 pts**
-- R32: 16 × 15 = **240 pts**
-- R16: 8 × 25 = **200 pts**
-- QF: 4 × 40 = **160 pts**
-- SF: 2 × 60 = **120 pts**
-- 3rd: **30 pts**
-- **Subtotal: ~990 pts** — Final multiplier TBD
+Any match where Spain is `home_team` or `away_team` doubles the round multiplier (applied on top — e.g. a Spain group match is effectively ×2; a Spain final is ×30). Implemented in `compute_points()` by checking team names against `'Spain'`.
+
+
+**Max possible points (perfect tournament, ignoring Spain bonus and pens):**
+
+- Group: 48 × 7 = **336 pts**
+- R32: 16 × 21 = **336 pts**
+- R16: 8 × 35 = **280 pts**
+- QF: 4 × 56 = **224 pts**
+- SF: 2 × 84 = **168 pts**
+- 3rd: **42 pts**
+- Final: **105 pts**
+- **Subtotal: 1,491 pts** (plus penalty bonuses and Spain ×2 on any Spain matches)
 
 ## UI — Views &amp; States
 

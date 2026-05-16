@@ -9,7 +9,7 @@ const MULTIPLIERS: Record<string, number> = {
   QF: 8,
   SF: 12,
   "3rd": 6,
-  final: 1, // TBD per spec; update before the final
+  final: 15,
 };
 
 export function computePoints(args: {
@@ -46,7 +46,7 @@ export function computePoints(args: {
 
   let base = 0;
   if (predHome === homeScore && predAway === awayScore) {
-    base = 5;
+    base = 7;
   } else if (realRes === predRes) {
     if (realGd === predGd) base = 4;
     else if (Math.abs(predGd - realGd) === 1) base = 3;
@@ -59,6 +59,8 @@ export function computePoints(args: {
     if (predPenWinner !== null && predPenWinner === penWinner) penBonus = 2;
   }
 
-  const multiplier = MULTIPLIERS[round] ?? 1;
+  let multiplier = MULTIPLIERS[round] ?? 1;
+  if (homeTeam === "Spain" || awayTeam === "Spain") multiplier *= 2;
+
   return (base + penBonus) * multiplier;
 }
