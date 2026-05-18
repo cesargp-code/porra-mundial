@@ -12,6 +12,8 @@ import {
   getProfiles,
 } from "@/lib/supabase/server";
 
+import { syncMatchesNow } from "./actions";
+
 export const dynamic = "force-dynamic";
 
 const numberFmt = new Intl.NumberFormat("es-ES", {
@@ -196,6 +198,16 @@ export default async function MePage() {
                 </div>
               </div>
             </section>
+
+            {me?.is_admin && (
+              <div className="user-tab__signout">
+                <form action={syncMatchesNow}>
+                  <button type="submit" className="auth-button me__signout">
+                    Sync matches now
+                  </button>
+                </form>
+              </div>
+            )}
 
             <div className="user-tab__signout">
               <form action="/auth/signout" method="post">

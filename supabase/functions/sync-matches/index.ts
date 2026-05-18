@@ -11,16 +11,14 @@ const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
 
-type Phase = "live" | "pre_match" | "post_match" | "inactive";
-
-// Minutes between API calls per phase. Cron fires every 5 min; the function
-// self-throttles. Budget target: ≤80 calls/day (free-tier cap is 100).
-const MIN_INTERVAL_MIN: Record<Phase, number> = {
-  live: 8,
-  pre_match: 15,
-  post_match: 15,
-  inactive: 120,
-};
+// Polling policy: poll only while at least one match's "active window"
+// covers wall-clock now. Outside any window, skip — saves quota on idle
+// days. Inside, throttle to one API call per POLL_INTERVAL_MIN.
+const POLL_INTERVAL_MIN = 10;
+const PRE_KICKOFF_MIN   = 10;   // window starts N min before kickoff
+const POST_MATCH_MIN    = 30;   // window stays open N min after expected end
+const GROUP_DURATION    = 110;  // 90 + stoppage
+const KO_DURATION       = 180;  // 90 + ET + HT + pens + buffer
 
 async function decide() {
   const now = new Date();
@@ -34,57 +32,27 @@ async function decide() {
   const lastSync = lastSyncRow ? new Date(lastSyncRow.synced_at) : new Date(0);
   const minSinceSync = (now.getTime() - lastSync.getTime()) / 60_000;
 
-  const { count: liveCount } = await sb
-    .from("matches")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "live");
+  const { data: active } = await sb.rpc("any_match_active_now", {
+    p_pre_min:   PRE_KICKOFF_MIN,
+    p_post_min:  POST_MATCH_MIN,
+    p_group_dur: GROUP_DURATION,
+    p_ko_dur:    KO_DURATION,
+  });
 
-  let phase: Phase = "inactive";
-  let why = "no upcoming match";
+  const inWindow = active === true;
+  const sync = inWindow && minSinceSync >= POLL_INTERVAL_MIN;
+  const reason = !inWindow
+    ? "no active match window"
+    : sync
+      ? "active window"
+      : "throttled";
 
-  if ((liveCount ?? 0) > 0) {
-    phase = "live";
-    why = `${liveCount} live match(es)`;
-  } else {
-    const { data: next } = await sb
-      .from("matches")
-      .select("kickoff_utc")
-      .eq("status", "scheduled")
-      .gte("kickoff_utc", now.toISOString())
-      .order("kickoff_utc", { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (next) {
-      const minToKick = (new Date(next.kickoff_utc).getTime() - now.getTime()) / 60_000;
-      if (minToKick <= 60) {
-        phase = "pre_match";
-        why = `kickoff in ${minToKick.toFixed(0)} min`;
-      }
-    }
-
-    if (phase === "inactive") {
-      // Catch late status changes from a match that just ended.
-      const threeHoursAgo = new Date(now.getTime() - 3 * 3_600_000).toISOString();
-      const { count: recent } = await sb
-        .from("matches")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "completed")
-        .gte("kickoff_utc", threeHoursAgo);
-      if ((recent ?? 0) > 0) {
-        phase = "post_match";
-        why = "recent completed match";
-      }
-    }
-  }
-
-  const threshold = MIN_INTERVAL_MIN[phase];
   return {
-    sync: minSinceSync >= threshold,
-    phase,
-    threshold,
+    sync,
+    reason,
+    inWindow,
     minSinceSync: Number(minSinceSync.toFixed(1)),
-    why,
+    threshold: POLL_INTERVAL_MIN,
   };
 }
 
@@ -143,7 +111,12 @@ Deno.serve(async (req) => {
   if (req.headers.get("x-cron-secret") !== CRON_SECRET) {
     return new Response("forbidden", { status: 403 });
   }
+  const force = req.headers.get("x-force-sync") === "1";
   try {
+    if (force) {
+      const result = await syncMatches();
+      return Response.json({ ...result, forced: true });
+    }
     const decision = await decide();
     if (!decision.sync) {
       return Response.json({ skipped: true, ...decision });
