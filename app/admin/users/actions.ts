@@ -18,12 +18,12 @@ function siteUrl(): string {
   return "https://porra26-poligoneros.vercel.app";
 }
 
-function callbackUrl(actionLink: string): string {
+function confirmUrl(actionLink: string): string {
   const u = new URL(actionLink);
   const tokenHash = u.searchParams.get("token") ?? u.searchParams.get("token_hash");
   const type = u.searchParams.get("type") ?? "magiclink";
   if (!tokenHash) return actionLink;
-  return `${siteUrl()}/auth/callback?token_hash=${tokenHash}&type=${type}&next=/`;
+  return `${siteUrl()}/auth/confirm?token_hash=${tokenHash}&type=${type}&next=/`;
 }
 
 export type LinkResult = { url: string } | { error: string };
@@ -44,7 +44,7 @@ export async function inviteUserAction(email: string): Promise<LinkResult> {
   if (!link) return { error: "No se pudo generar el enlace" };
 
   revalidatePath("/admin/users");
-  return { url: callbackUrl(link) };
+  return { url: confirmUrl(link) };
 }
 
 export async function generateMagicLinkAction(email: string): Promise<LinkResult> {
@@ -62,5 +62,5 @@ export async function generateMagicLinkAction(email: string): Promise<LinkResult
   const link = data?.properties?.action_link;
   if (!link) return { error: "No se pudo generar el enlace" };
 
-  return { url: callbackUrl(link) };
+  return { url: confirmUrl(link) };
 }
