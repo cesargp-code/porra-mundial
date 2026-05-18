@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { BackButton } from "@/components/BackButton";
 import { RankingTabs } from "@/components/RankingTabs";
 import { ScoringSheet } from "@/components/ScoringSheet";
+import { SyncMatchesButton } from "@/components/SyncMatchesButton";
 import {
   getAllPredictions,
   getCurrentUserId,
@@ -11,8 +12,6 @@ import {
   getPointsByUser,
   getProfiles,
 } from "@/lib/supabase/server";
-
-import { syncMatchesNow } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -201,11 +200,7 @@ export default async function MePage() {
 
             {me?.is_admin && (
               <div className="user-tab__signout">
-                <form action={syncMatchesNow}>
-                  <button type="submit" className="auth-button me__signout">
-                    Sync matches now
-                  </button>
-                </form>
+                <SyncMatchesButton />
               </div>
             )}
 
