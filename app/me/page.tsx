@@ -93,7 +93,8 @@ export default async function MePage() {
       <div className="topbar">
         <BackButton href="/" />
         <div className="topbar__meta">
-          <div className="topbar__when">Fan Zone</div>
+          <div className="topbar__when">FAN ZONE</div>
+          <div className="topbar__where">Poligoneros</div>
         </div>
       </div>
 

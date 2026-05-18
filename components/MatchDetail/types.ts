@@ -9,6 +9,7 @@ export type Player = {
 export type FinishedOrLivePlay = {
   guess: { home: number; away: number };
   points: number;
+  penWinnerLabel?: string;
 };
 
 export type UpcomingPlay = {

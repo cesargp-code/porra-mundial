@@ -515,6 +515,13 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .hero--finished .hero__score--win { color: var(--green); }
 .hero--live .hero__score--win { color: var(--amber); }
 .hero__score--upcoming { color: #d6d6d0; }
+.hero__pen {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink-3);
+  letter-spacing: -0.02em;
+  margin-left: 4px;
+}
 .hero__sep {
   font-size: 22px;
   font-weight: 700;
@@ -573,6 +580,9 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   text-align: right;
 }
 .player__guess--exact { color: var(--green); }
+.player__guess--missed { color: var(--ink-3); font-weight: 500; }
+.player--missed .player__name { color: var(--ink-2); font-weight: 500; }
+.player__guess-pen { color: var(--ink-3); font-weight: 500; font-size: 13px; }
 .player__points {
   font-size: 15px;
   font-weight: 600;

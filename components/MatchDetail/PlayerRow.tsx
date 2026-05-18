@@ -23,26 +23,45 @@ function isReady(p: Props["play"]): p is UpcomingPlay {
 export function PlayerRow({ player, state, play, realScore }: Props) {
   const className = `player${player.you ? " player--you" : ""}`;
 
-  if ((state === "finished" || state === "live") && isScored(play)) {
-    const exact =
-      realScore != null &&
-      play.guess.home === realScore.home &&
-      play.guess.away === realScore.away;
-    const pointsCls =
-      state === "live"
-        ? "player__points--prov"
-        : play.points > 0
-          ? "player__points--win"
-          : "player__points--zero";
+  if (state === "finished" || state === "live") {
+    if (isScored(play)) {
+      const exact =
+        realScore != null &&
+        play.guess.home === realScore.home &&
+        play.guess.away === realScore.away;
+      const pointsCls =
+        state === "live"
+          ? "player__points--prov"
+          : play.points > 0
+            ? "player__points--win"
+            : "player__points--zero";
+
+      const drawWithPen =
+        play.guess.home === play.guess.away && !!play.penWinnerLabel;
+
+      return (
+        <div className={className}>
+          <div className="player__name">{player.name}</div>
+          <div className={`player__guess${exact ? " player__guess--exact" : ""}`}>
+            {play.guess.home}–{play.guess.away}
+            {drawWithPen && (
+              <span className="player__guess-pen"> ({play.penWinnerLabel})</span>
+            )}
+          </div>
+          <div className={`player__points ${pointsCls}`}>
+            <strong>{play.points}</strong>
+            <span className="player__points-lbl">puntos</span>
+          </div>
+        </div>
+      );
+    }
 
     return (
-      <div className={className}>
+      <div className={`${className} player--missed`}>
         <div className="player__name">{player.name}</div>
-        <div className={`player__guess${exact ? " player__guess--exact" : ""}`}>
-          {play.guess.home}–{play.guess.away}
-        </div>
-        <div className={`player__points ${pointsCls}`}>
-          <strong>{play.points}</strong>
+        <div className="player__guess player__guess--missed">—</div>
+        <div className="player__points player__points--zero">
+          <strong>0</strong>
           <span className="player__points-lbl">puntos</span>
         </div>
       </div>

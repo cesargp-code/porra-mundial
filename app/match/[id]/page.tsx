@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
+import { teamLabel } from "@/components/flags/index";
 import { DetailTopbar } from "@/components/MatchDetail/DetailTopbar";
 import { Hero } from "@/components/MatchDetail/Hero";
 import { PlayerRow } from "@/components/MatchDetail/PlayerRow";
@@ -101,6 +102,17 @@ export default async function MatchDetailPage({
       };
   } else {
     const predictions = await getPredictionsForMatch(id);
+    const isKnockout = row.round !== "group";
+    const penWinnerLabelFor = (penWinner: string | null): string | undefined => {
+      if (!isKnockout || !penWinner) return undefined;
+      const code =
+        penWinner === row.home_team
+          ? row.home_team_code
+          : penWinner === row.away_team
+            ? row.away_team_code
+            : null;
+      return teamLabel(code, penWinner);
+    };
     scoredPlays = Object.fromEntries(
       predictions.map((p) => {
         // For 'live' the DB trigger hasn't run yet — compute preliminary points
@@ -125,6 +137,7 @@ export default async function MatchDetailPage({
           {
             guess: { home: p.home_score, away: p.away_score },
             points,
+            penWinnerLabel: penWinnerLabelFor(p.penalty_winner),
           },
         ];
       })
@@ -143,22 +156,20 @@ export default async function MatchDetailPage({
 
   const sortedPlayers = [...players].sort((a, b) => {
     if (scoredPlays) {
-      // In live/finished: only show players who actually predicted; sort by points desc.
+      // In live/finished: predictors sort by points desc; non-predictors fall to the bottom alphabetically.
       const ap = scoredPlays[a.id];
       const bp = scoredPlays[b.id];
-      if (!ap && !bp) return 0;
-      if (!ap) return 1;
-      if (!bp) return -1;
-      return bp.points - ap.points;
+      if (ap && bp) return bp.points - ap.points;
+      if (ap) return -1;
+      if (bp) return 1;
+      return a.name.localeCompare(b.name);
     }
     const ra = upcomingPlays?.[a.id]?.ready ? 0 : 1;
     const rb = upcomingPlays?.[b.id]?.ready ? 0 : 1;
     return ra - rb;
   });
 
-  const visiblePlayers = scoredPlays
-    ? sortedPlayers.filter((p) => scoredPlays?.[p.id])
-    : sortedPlayers;
+  const visiblePlayers = sortedPlayers;
 
   return (
     <div className="screen" data-screen-label={`Detail · ${detailState}`}>
@@ -177,6 +188,8 @@ export default async function MatchDetailPage({
           awayName={match.awayName}
           homeScore={homeScore}
           awayScore={awayScore}
+          homePen={row.home_pen}
+          awayPen={row.away_pen}
         />
         {detailState === "upcoming" ? (
           <PredictRegion

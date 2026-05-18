@@ -88,11 +88,24 @@ async function decide() {
   };
 }
 
+// Advances synced_at even when the upstream API fails, so decide()'s
+// self-throttle ticks forward. Without this, a persistent 429 makes every
+// cron run hit the API and blow the daily quota.
+async function markAttempt() {
+  await sb
+    .from("matches")
+    .update({ synced_at: new Date().toISOString() })
+    .not("id", "is", null);
+}
+
 async function syncMatches() {
   const res = await fetch(`${API_URL}/matches`, {
     headers: { Authorization: `Bearer ${API_KEY}` },
   });
-  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  if (!res.ok) {
+    await markAttempt();
+    throw new Error(`API ${res.status}: ${await res.text()}`);
+  }
   const matches = (await res.json()) as Array<Record<string, unknown>>;
   const synced_at = new Date().toISOString();
 

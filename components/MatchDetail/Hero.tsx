@@ -10,6 +10,8 @@ type Props = {
   awayName: string;
   homeScore: number | null;
   awayScore: number | null;
+  homePen?: number | null;
+  awayPen?: number | null;
 };
 
 export function Hero({
@@ -21,16 +23,26 @@ export function Hero({
   awayName,
   homeScore,
   awayScore,
+  homePen,
+  awayPen,
 }: Props) {
   const showScore =
     (state === "finished" || state === "live") && homeScore !== null && awayScore !== null;
+  const showPens =
+    showScore && homePen != null && awayPen != null;
   const winner =
     showScore && homeScore !== null && awayScore !== null
-      ? homeScore > awayScore
-        ? "home"
-        : awayScore > homeScore
-          ? "away"
-          : null
+      ? showPens
+        ? homePen! > awayPen!
+          ? "home"
+          : awayPen! > homePen!
+            ? "away"
+            : null
+        : homeScore > awayScore
+          ? "home"
+          : awayScore > homeScore
+            ? "away"
+            : null
       : null;
 
   return (
@@ -44,6 +56,7 @@ export function Hero({
           {showScore ? (
             <div className={`hero__score ${winner === "home" ? "hero__score--win" : ""}`}>
               {homeScore}
+              {showPens && <span className="hero__pen"> ({homePen})</span>}
             </div>
           ) : (
             <div className="hero__score hero__score--upcoming">–</div>
@@ -58,6 +71,7 @@ export function Hero({
           {showScore ? (
             <div className={`hero__score ${winner === "away" ? "hero__score--win" : ""}`}>
               {awayScore}
+              {showPens && <span className="hero__pen"> ({awayPen})</span>}
             </div>
           ) : (
             <div className="hero__score hero__score--upcoming">–</div>
