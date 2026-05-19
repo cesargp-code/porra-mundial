@@ -38,13 +38,15 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
   const homeMissing = !row.home_team || !row.home_team_code;
   const awayMissing = !row.away_team || !row.away_team_code;
   const tbd = homeMissing || awayMissing;
+  const kickoff = new Date(row.kickoff_utc);
+  const hasKickedOff = Date.now() >= kickoff.getTime();
 
   const mine = ctx.myPredictions.get(row.id) ?? null;
 
   let state: CardState;
   if (row.status === "completed") state = "finished";
-  else if (row.status === "live") state = "live";
   else if (tbd) state = "locked";
+  else if (row.status === "live" || hasKickedOff) state = "live";
   else if (mine) state = "predicted";
   else state = "missing";
 
@@ -74,7 +76,7 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
     awayCode: row.away_team_code,
     homeName: row.home_team ?? "—",
     awayName: row.away_team ?? "—",
-    kickoff: new Date(row.kickoff_utc),
+    kickoff,
     homeScore: row.home_score,
     awayScore: row.away_score,
     stadium: row.stadium,

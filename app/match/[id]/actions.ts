@@ -29,6 +29,17 @@ export async function savePrediction(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Sesión expirada." };
 
+  const { data: match, error: matchError } = await supabase
+    .from("matches")
+    .select("kickoff_utc")
+    .eq("id", matchId)
+    .maybeSingle();
+  if (matchError) return { ok: false, error: matchError.message };
+  if (!match) return { ok: false, error: "Partido no encontrado." };
+  if (Date.now() >= new Date(match.kickoff_utc as string).getTime()) {
+    return { ok: false, error: "El partido ya ha empezado." };
+  }
+
   const { error } = await supabase.from("predictions").upsert(
     {
       user_id: user.id,
