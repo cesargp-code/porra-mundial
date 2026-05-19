@@ -4,11 +4,12 @@ import { BackButton } from "@/components/BackButton";
 import { RankingTabs } from "@/components/RankingTabs";
 import { ScoringSheet } from "@/components/ScoringSheet";
 import { SyncMatchesButton } from "@/components/SyncMatchesButton";
+import { getPredictionStats } from "@/lib/predictionStats";
 import {
-  getAllPredictions,
   getCurrentUserId,
   getMatches,
   getMyPredictions,
+  getOtherPlayersPredictions,
   getPointsByUser,
   getProfiles,
 } from "@/lib/supabase/server";
@@ -29,13 +30,13 @@ export default async function MePage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const [profiles, pointsByUser, matches, myPredictions, allPredictions] =
+  const [profiles, pointsByUser, matches, myPredictions, otherPredictions] =
     await Promise.all([
       getProfiles(),
       getPointsByUser(),
       getMatches(),
       getMyPredictions(userId),
-      getAllPredictions(),
+      getOtherPlayersPredictions(userId),
     ]);
 
   const me = profiles.find((p) => p.id === userId);
@@ -75,19 +76,8 @@ export default async function MePage() {
     return p.home_score === m.home_score && p.away_score === m.away_score;
   }).length;
 
-  const avgGoals = (rows: { home_score: number; away_score: number }[]) =>
-    rows.length === 0
-      ? 0
-      : rows.reduce((s, r) => s + r.home_score + r.away_score, 0) / rows.length;
-  const drawRate = (rows: { home_score: number; away_score: number }[]) =>
-    rows.length === 0
-      ? 0
-      : rows.filter((r) => r.home_score === r.away_score).length / rows.length;
-
-  const userGoals = avgGoals(myPredictions);
-  const allGoals = avgGoals(allPredictions);
-  const userDraws = drawRate(myPredictions);
-  const allDraws = drawRate(allPredictions);
+  const userStats = getPredictionStats(myPredictions);
+  const crowdStats = getPredictionStats(otherPredictions);
 
   return (
     <div className="screen" data-screen-label="Fan Zone">
@@ -163,13 +153,13 @@ export default async function MePage() {
                   <div className="player">
                     <div className="player__name">{userName}</div>
                     <div className="player__points">
-                      <strong>{numberFmt.format(userGoals)}</strong>
+                      <strong>{numberFmt.format(userStats.avgGoals)}</strong>
                     </div>
                   </div>
                   <div className="player">
-                    <div className="player__name">Todos</div>
+                    <div className="player__name">Resto</div>
                     <div className="player__points">
-                      <strong>{numberFmt.format(allGoals)}</strong>
+                      <strong>{numberFmt.format(crowdStats.avgGoals)}</strong>
                     </div>
                   </div>
                 </div>
@@ -185,13 +175,13 @@ export default async function MePage() {
                   <div className="player">
                     <div className="player__name">{userName}</div>
                     <div className="player__points">
-                      <strong>{percentFmt.format(userDraws)}</strong>
+                      <strong>{percentFmt.format(userStats.drawRate)}</strong>
                     </div>
                   </div>
                   <div className="player">
-                    <div className="player__name">Todos</div>
+                    <div className="player__name">Resto</div>
                     <div className="player__points">
-                      <strong>{percentFmt.format(allDraws)}</strong>
+                      <strong>{percentFmt.format(crowdStats.drawRate)}</strong>
                     </div>
                   </div>
                 </div>

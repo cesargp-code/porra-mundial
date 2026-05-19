@@ -22,6 +22,8 @@ things/
 # Claude Code / agents (local tooling state)
 .claude/settings.local.json
 .claude/skills/
+.codex/
 .agents/skills/
+AGENTS.md
 skills-lock.json
 .mcp.json

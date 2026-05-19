@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+import { createAdminClient } from "./admin";
 import type { DbMatch, DbPrediction, DbProfile } from "./types";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
@@ -147,15 +148,16 @@ export async function getPointsByUser(): Promise<Map<string, number>> {
   return totals;
 }
 
-export async function getAllPredictions(): Promise<
-  Pick<DbPrediction, "user_id" | "match_id" | "home_score" | "away_score">[]
-> {
-  const supabase = await createClient();
+export async function getOtherPlayersPredictions(
+  userId: string
+): Promise<Pick<DbPrediction, "user_id" | "match_id" | "home_score" | "away_score">[]> {
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("predictions")
-    .select("user_id, match_id, home_score, away_score");
+    .select("user_id, match_id, home_score, away_score")
+    .neq("user_id", userId);
 
-  if (error) throw new Error(`Failed to load predictions: ${error.message}`);
+  if (error) throw new Error(`Failed to load crowd predictions: ${error.message}`);
   return (data ?? []) as Pick<
     DbPrediction,
     "user_id" | "match_id" | "home_score" | "away_score"
