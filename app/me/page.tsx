@@ -25,6 +25,11 @@ const percentFmt = new Intl.NumberFormat("es-ES", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
+const potFmt = new Intl.NumberFormat("es-ES", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+});
 
 export default async function MePage() {
   const userId = await getCurrentUserId();
@@ -49,6 +54,7 @@ export default async function MePage() {
       points: pointsByUser.get(p.id) ?? 0,
     }))
     .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+  const prizePot = profiles.length * 10;
 
   const myPredictionByMatchId = new Map(
     myPredictions.map((p) => [p.match_id, p])
@@ -96,6 +102,11 @@ export default async function MePage() {
           <>
             <div className="hero hero--leaderboard">
               <div className="players--embedded">
+                <div className="prize-banner" aria-label={`Bote acumulado ${potFmt.format(prizePot)}`}>
+                  <span className="prize-banner__text">
+                    Bote acumulado {potFmt.format(prizePot)}
+                  </span>
+                </div>
                 {ranked.map((p, i) => (
                   <div
                     key={p.id}
