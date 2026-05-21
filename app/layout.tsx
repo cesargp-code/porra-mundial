@@ -11,8 +11,8 @@ const googleSans = Google_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Quiniela — Mundial 2026",
-  description: "Predicciones de partidos del Mundial 2026 con tu grupo de amigos.",
+  title: "Porra Mundial 2026",
+  description: "Predicciones de partidos del Mundial 2026 de Poligoneros.",
 };
 
 export const viewport: Viewport = {
