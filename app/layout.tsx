@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Google_Sans } from "next/font/google";
+import Image from "next/image";
 
 import "./globals.css";
 
@@ -24,7 +25,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={googleSans.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <footer className="bottom-logo" aria-label="Porra Mundial">
+          <Image src="/img/bottom_logo.png" alt="" width={62} height={95} />
+        </footer>
+      </body>
     </html>
   );
 }

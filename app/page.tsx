@@ -112,7 +112,6 @@ export default async function MatchListPage({
               </section>
             ))}
 
-            <div className="list-end">FIN DE LA LISTA</div>
           </>
         }
         rightContent={
@@ -129,7 +128,6 @@ export default async function MatchListPage({
               </section>
             ))}
 
-            <div className="list-end">FIN DE LA LISTA</div>
           </>
         }
       />

@@ -35,11 +35,24 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   -webkit-tap-highlight-color: transparent;
 }
 
+.bottom-logo {
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 24px 0 32px;
+  display: flex;
+  justify-content: center;
+  line-height: 0;
+}
+.bottom-logo img {
+  width: 62px;
+  height: auto;
+}
+
 /* App shell */
 .screen {
   max-width: 430px;
   margin: 0 auto;
-  min-height: 100vh;
+  min-height: calc(100vh - 151px);
   background: var(--bg);
   position: relative;
   padding-bottom: 24px;
@@ -808,29 +821,9 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   color: var(--red);
 }
 
-/* End-of-list footer */
-.list-end {
-  text-align: center;
-  padding: 28px 0 8px;
-  color: var(--ink-3);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.list-end::before, .list-end::after {
-  content: "";
-  display: inline-block;
-  width: 24px;
-  height: 1px;
-  background: #D6D6D0;
-  vertical-align: middle;
-  margin: 0 10px;
-}
-
 /* ===== Auth (login) screen ===== */
 .auth-screen {
-  min-height: 100vh;
+  min-height: calc(100vh - 151px);
   max-width: 430px;
   margin: 0 auto;
   padding: 56px 24px 32px;
