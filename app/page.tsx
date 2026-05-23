@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { DayHeader } from "@/components/DayHeader";
+import { GroupStandingsTable } from "@/components/GroupStandingsTable";
 import { MatchCard } from "@/components/MatchCard";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/lib/matches";
 import {
   getCurrentUserId,
+  getGroupStandings,
   getMatches,
   getMyPredictions,
   getPredictorCounts,
@@ -20,15 +22,21 @@ import {
 
 export const revalidate = 60;
 
-export default async function MatchListPage() {
+export default async function MatchListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const { view } = await searchParams;
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const [rows, profiles, myPredictions, predictorCounts] = await Promise.all([
+  const [rows, profiles, myPredictions, predictorCounts, groupStandings] = await Promise.all([
     getMatches(),
     getProfiles(),
     getMyPredictions(userId),
     getPredictorCounts(),
+    getGroupStandings(),
   ]);
 
   const ctx: MatchListContext = {
@@ -40,6 +48,11 @@ export default async function MatchListPage() {
   const matches = rows.map((r) => toUiMatch(r, ctx));
   const groups = groupByDay(matches);
   const tournamentGroups = groupByTournamentGroup(matches);
+  const standingsByGroup = new Map<string, typeof groupStandings>();
+  for (const standing of groupStandings) {
+    const key = standing.group_name.replace(/^group\s+/i, "").trim().toUpperCase();
+    standingsByGroup.set(key, [...(standingsByGroup.get(key) ?? []), standing]);
+  }
 
   const totalPoints = myPredictions.reduce((sum, p) => sum + (p.points ?? 0), 0);
   const rank = 1; // leaderboard not implemented yet
@@ -50,7 +63,10 @@ export default async function MatchListPage() {
         ariaLabel="Vista de partidos"
         leftLabel="Por fecha"
         rightLabel="Por grupos"
-        defaultTab="left"
+        defaultTab={view === "groups" ? "right" : "left"}
+        queryParam="view"
+        leftQueryValue="date"
+        rightQueryValue="groups"
         headerContent={
           <div className="appbar__row">
             <div className="appbar__title">
@@ -103,10 +119,11 @@ export default async function MatchListPage() {
           <>
             {tournamentGroups.map((g) => (
               <section key={g.key} className="day-group">
-                <DayHeader label={g.label} count={g.items.length} />
+                <DayHeader label={g.label} />
+                <GroupStandingsTable standings={standingsByGroup.get(g.key) ?? []} />
                 <div className="list">
                   {g.items.map((m) => (
-                    <MatchCard key={m.id} match={m} />
+                    <MatchCard key={m.id} match={m} timeFormat="compact-date-time" />
                   ))}
                 </div>
               </section>

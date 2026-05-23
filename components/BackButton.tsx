@@ -1,9 +1,9 @@
 "use client";
 
-import Link, { useLinkStatus } from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
-function BackIcon() {
-  const { pending } = useLinkStatus();
+function BackIcon({ pending }: { pending: boolean }) {
   if (pending) {
     return <span className="iconbtn__spinner" aria-hidden="true" />;
   }
@@ -24,9 +24,23 @@ function BackIcon() {
 }
 
 export function BackButton({ href = "/" }: { href?: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [pending, setPending] = useState(false);
+  const fromList = searchParams.get("from") === "list";
+
+  function handleClick() {
+    setPending(true);
+    if (fromList && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push(href);
+  }
+
   return (
-    <Link href={href} className="iconbtn" aria-label="Volver" prefetch>
-      <BackIcon />
-    </Link>
+    <button type="button" className="iconbtn" aria-label="Volver" onClick={handleClick}>
+      <BackIcon pending={pending} />
+    </button>
   );
 }

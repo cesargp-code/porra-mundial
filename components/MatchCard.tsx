@@ -4,11 +4,23 @@ import { Flag, teamLabel } from "./flags";
 import { GroupPressure } from "./GroupPressure";
 import { PointsLine } from "./PointsLine";
 import { StatusPill } from "./StatusPill";
-import { timeLabel } from "@/lib/format";
+import { compactDateTimeLabel, timeLabel } from "@/lib/format";
 import type { UiMatch } from "@/lib/matches";
 
-export function MatchCard({ match }: { match: UiMatch }) {
+type MatchCardTimeFormat = "time" | "compact-date-time";
+
+export function MatchCard({
+  match,
+  timeFormat = "time",
+}: {
+  match: UiMatch;
+  timeFormat?: MatchCardTimeFormat;
+}) {
   const { state, homeCode, awayCode, homeName, awayName, homeScore, awayScore } = match;
+  const kickoffLabel =
+    timeFormat === "compact-date-time"
+      ? compactDateTimeLabel(match.kickoff)
+      : timeLabel(match.kickoff);
   const showScore =
     (state === "finished" || state === "live") && homeScore !== null && awayScore !== null;
   const homeWin = showScore && (homeScore as number) > (awayScore as number);
@@ -21,7 +33,7 @@ export function MatchCard({ match }: { match: UiMatch }) {
         {children}
       </article>
     ) : (
-      <Link href={`/match/${match.id}`} className={className}>
+      <Link href={`/match/${match.id}?from=list`} className={className}>
         {children}
       </Link>
     );
@@ -70,7 +82,7 @@ export function MatchCard({ match }: { match: UiMatch }) {
         )}
         {state === "missing" && (
           <>
-            <span className="compact__time">{timeLabel(match.kickoff)}</span>
+            <span className="compact__time">{kickoffLabel}</span>
             <GroupPressure
               ready={match.predictorsReady}
               total={match.predictorsTotal}
@@ -80,7 +92,7 @@ export function MatchCard({ match }: { match: UiMatch }) {
         )}
         {state === "predicted" && (
           <>
-            <span className="compact__time">{timeLabel(match.kickoff)}</span>
+            <span className="compact__time">{kickoffLabel}</span>
             <GroupPressure
               ready={match.predictorsReady}
               total={match.predictorsTotal}
@@ -90,7 +102,7 @@ export function MatchCard({ match }: { match: UiMatch }) {
         )}
         {state === "locked" && (
           <>
-            <span className="compact__time">{timeLabel(match.kickoff)}</span>
+            <span className="compact__time">{kickoffLabel}</span>
             <span className="compact__meta compact__meta--muted">Aún no disponible</span>
           </>
         )}

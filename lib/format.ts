@@ -1,4 +1,5 @@
 const DAYS_ES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const DAYS_SHORT_ES = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
 const MONTHS_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 const WEEKDAY_INDEX = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -47,6 +48,12 @@ export function dayLabel(utc: Date): string {
 export function timeLabel(utc: Date): string {
   const p = localParts(utc);
   return `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`;
+}
+
+export function compactDateTimeLabel(utc: Date): string {
+  const p = localParts(utc);
+  const time = `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`;
+  return `${DAYS_SHORT_ES[p.weekday]} ${p.day} ${MONTHS_ES[p.month].toUpperCase()} ${time}`;
 }
 
 export function whenLabel(utc: Date): string {

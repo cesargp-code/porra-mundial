@@ -39,3 +39,27 @@ export type DbPrediction = {
   created_at: string;
   updated_at: string;
 };
+
+export type DbGroup = {
+  id: number;
+  name: string;
+  synced_at: string;
+};
+
+export type DbGroupStanding = {
+  group_name: string;
+  team_id: number;
+  team_name: string;
+  team_code: string | null;
+  flag_url: string | null;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number;
+  points: number;
+  position: number;
+  synced_at: string;
+};

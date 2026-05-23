@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { BackButton } from "@/components/BackButton";
 import { RankingTabs } from "@/components/RankingTabs";
 import { ScoringSheet } from "@/components/ScoringSheet";
+import { SyncGroupsButton } from "@/components/SyncGroupsButton";
 import { SyncMatchesButton } from "@/components/SyncMatchesButton";
 import { getPredictionStats } from "@/lib/predictionStats";
 import {
@@ -200,8 +201,9 @@ export default async function MePage() {
             </section>
 
             {me?.is_admin && (
-              <div className="user-tab__signout">
+              <div className="admin-sync">
                 <SyncMatchesButton />
+                <SyncGroupsButton />
               </div>
             )}
 

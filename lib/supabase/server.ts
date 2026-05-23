@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import { createAdminClient } from "./admin";
-import type { DbMatch, DbPrediction, DbProfile } from "./types";
+import type { DbGroupStanding, DbMatch, DbPrediction, DbProfile } from "./types";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -40,6 +40,18 @@ export async function getMatches(): Promise<DbMatch[]> {
 
   if (error) throw new Error(`Failed to load matches: ${error.message}`);
   return (data ?? []) as DbMatch[];
+}
+
+export async function getGroupStandings(): Promise<DbGroupStanding[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("group_standings")
+    .select("*")
+    .order("group_name", { ascending: true })
+    .order("position", { ascending: true });
+
+  if (error) throw new Error(`Failed to load group standings: ${error.message}`);
+  return (data ?? []) as DbGroupStanding[];
 }
 
 export async function getMatchById(id: string): Promise<DbMatch | null> {

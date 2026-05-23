@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState, type PointerEvent, type ReactNode } from "react";
 
 type TabSide = "left" | "right";
@@ -13,6 +14,9 @@ type Props = {
   defaultTab?: TabSide;
   headerContent?: ReactNode;
   preserveSticky?: boolean;
+  queryParam?: string;
+  leftQueryValue?: string;
+  rightQueryValue?: string;
 };
 
 export function SegmentedTabs({
@@ -24,7 +28,13 @@ export function SegmentedTabs({
   defaultTab = "left",
   headerContent,
   preserveSticky = false,
+  queryParam,
+  leftQueryValue = "left",
+  rightQueryValue = "right",
 }: Props) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [active, setActive] = useState<TabSide>(defaultTab);
   const swipeRef = useRef({
     pointerId: -1,
@@ -32,6 +42,16 @@ export function SegmentedTabs({
     startY: 0,
     tracking: false,
   });
+
+  function selectTab(next: TabSide) {
+    setActive(next);
+    if (!queryParam) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(queryParam, next === "left" ? leftQueryValue : rightQueryValue);
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse") return;
@@ -53,8 +73,8 @@ export function SegmentedTabs({
 
     if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
 
-    if (dx < 0 && active === "left") setActive("right");
-    if (dx > 0 && active === "right") setActive("left");
+    if (dx < 0 && active === "left") selectTab("right");
+    if (dx > 0 && active === "right") selectTab("left");
 
     swipeRef.current.tracking = false;
   }
@@ -76,7 +96,7 @@ export function SegmentedTabs({
         role="tab"
         aria-selected={active === "left"}
         className={`seg__btn ${active === "left" ? "seg__btn--active" : ""}`}
-        onClick={() => setActive("left")}
+        onClick={() => selectTab("left")}
       >
         {leftLabel}
       </button>
@@ -85,7 +105,7 @@ export function SegmentedTabs({
         role="tab"
         aria-selected={active === "right"}
         className={`seg__btn ${active === "right" ? "seg__btn--active" : ""}`}
-        onClick={() => setActive("right")}
+        onClick={() => selectTab("right")}
       >
         {rightLabel}
       </button>

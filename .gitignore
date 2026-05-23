@@ -18,6 +18,7 @@ next-env.d.ts
 
 # Local scratch
 things/
+supabase/.temp/
 
 # Claude Code / agents (local tooling state)
 .claude/settings.local.json
