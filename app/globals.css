@@ -437,7 +437,10 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 }
 .seg__btn--active { color: var(--ink); font-weight: 700; }
 
-.rtabs__viewport { overflow: hidden; }
+.rtabs__viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+}
 .rtabs__track {
   display: flex;
   width: 200%;
