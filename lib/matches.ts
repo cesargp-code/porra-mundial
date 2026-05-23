@@ -14,6 +14,8 @@ export type UiMatch = {
   kickoff: Date;
   homeScore: number | null;
   awayScore: number | null;
+  round: string;
+  groupName: string | null;
   stadium: string | null;
   stadiumCity: string | null;
   userPoints: number | null;
@@ -79,6 +81,8 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
     kickoff,
     homeScore: row.home_score,
     awayScore: row.away_score,
+    round: row.round,
+    groupName: row.group_name,
     stadium: row.stadium,
     stadiumCity: row.stadium_city,
     userPoints,
@@ -88,6 +92,44 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
     predictorsReady: ctx.predictorCounts.get(row.id) ?? 0,
     predictorsTotal: ctx.totalPlayers,
   };
+}
+
+const GROUP_ORDER = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+
+function groupSortIndex(groupName: string) {
+  const normalized = groupName.replace(/^group\s+/i, "").trim().toUpperCase();
+  const index = GROUP_ORDER.indexOf(normalized);
+  return index === -1 ? GROUP_ORDER.length : index;
+}
+
+function groupLabel(groupName: string) {
+  const normalized = groupName.replace(/^group\s+/i, "").trim().toUpperCase();
+  return `Grupo ${normalized}`;
+}
+
+export type TournamentGroup = { key: string; label: string; items: UiMatch[] };
+
+export function groupByTournamentGroup(matches: UiMatch[]): TournamentGroup[] {
+  const sorted = [...matches]
+    .filter((m) => m.round === "group" && m.groupName)
+    .sort((a, b) => {
+      const groupDelta =
+        groupSortIndex(a.groupName as string) - groupSortIndex(b.groupName as string);
+      if (groupDelta !== 0) return groupDelta;
+      return a.kickoff.getTime() - b.kickoff.getTime();
+    });
+
+  const groups: TournamentGroup[] = [];
+  let cur: TournamentGroup | null = null;
+  for (const m of sorted) {
+    const key = (m.groupName as string).replace(/^group\s+/i, "").trim().toUpperCase();
+    if (!cur || cur.key !== key) {
+      cur = { key, label: groupLabel(key), items: [] };
+      groups.push(cur);
+    }
+    cur.items.push(m);
+  }
+  return groups;
 }
 
 export type DayGroup = { key: string; label: string; date: Date; items: UiMatch[] };

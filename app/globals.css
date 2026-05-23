@@ -59,6 +59,30 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
     var(--lime);
   z-index: 20;
 }
+.appbar--with-tabs {
+  display: block;
+  padding: 12px 16px 10px;
+  overflow: visible;
+}
+.appbar--with-tabs::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 4px;
+  background:
+    linear-gradient(rgba(216, 242, 74, 0.8), rgba(216, 242, 74, 0.8)),
+    url('/img/bg_wc2026.png') no-repeat top / 100% auto,
+    var(--lime);
+}
+.appbar__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px 10px;
+}
 .appbar__title {
   font-size: 26px;
   font-weight: 700;
@@ -131,7 +155,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 /* Day header (sticky) */
 .day-head {
   position: sticky;
-  top: 78px;
+  top: 128px;
   z-index: 10;
   padding: 14px 24px 8px;
   background: linear-gradient(var(--bg) 70%, rgba(236, 236, 234, 0));
@@ -360,6 +384,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   );
   transform: translateX(-125%);
   animation: prize-glimmer 4.8s ease-in-out infinite;
+  animation-delay: -2.2s;
 }
 .prize-banner__text {
   position: relative;
@@ -404,6 +429,12 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   background: #D6D6D2;
   border-radius: 999px;
 }
+.appbar .seg {
+  margin: 0;
+  background: var(--lime-deep);
+}
+.appbar .seg__btn { color: #fff; }
+.appbar .seg__btn--active { color: var(--ink); }
 .seg__thumb {
   position: absolute;
   top: 4px;
@@ -418,7 +449,9 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
+.seg__thumb--left,
 .seg__thumb--ranking { transform: translateX(0); }
+.seg__thumb--right,
 .seg__thumb--user { transform: translateX(100%); }
 .seg__btn {
   position: relative;
@@ -447,11 +480,30 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
+.rtabs__track--left,
 .rtabs__track--ranking { transform: translateX(0); }
+.rtabs__track--right,
 .rtabs__track--user { transform: translateX(-50%); }
 .rtabs__page {
   width: 50%;
   flex-shrink: 0;
+}
+.rtabs--preserve-sticky .rtabs__viewport {
+  overflow: visible;
+}
+.rtabs--preserve-sticky .rtabs__track {
+  display: block;
+  width: auto;
+  transform: none;
+  transition: none;
+  will-change: auto;
+}
+.rtabs--preserve-sticky .rtabs__page {
+  width: auto;
+}
+.rtabs--preserve-sticky .rtabs__track--left .rtabs__page:nth-child(2),
+.rtabs--preserve-sticky .rtabs__track--right .rtabs__page:nth-child(1) {
+  display: none;
 }
 
 /* ===== Match Detail page ===== */
