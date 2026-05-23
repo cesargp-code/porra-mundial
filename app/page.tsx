@@ -5,6 +5,7 @@ import { DayHeader } from "@/components/DayHeader";
 import { GroupStandingsTable } from "@/components/GroupStandingsTable";
 import { MatchCard } from "@/components/MatchCard";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
+import { sortGroupStandings } from "@/lib/groupStandings";
 import {
   groupByDay,
   groupByTournamentGroup,
@@ -119,7 +120,9 @@ export default async function MatchListPage({
             {tournamentGroups.map((g) => (
               <section key={g.key} className="day-group">
                 <DayHeader label={g.label} />
-                <GroupStandingsTable standings={standingsByGroup.get(g.key) ?? []} />
+                <GroupStandingsTable
+                  standings={sortGroupStandings(standingsByGroup.get(g.key) ?? [], g.items)}
+                />
                 <div className="list">
                   {g.items.map((m) => (
                     <MatchCard key={m.id} match={m} timeFormat="compact-date-time" />
