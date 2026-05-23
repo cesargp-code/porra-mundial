@@ -183,7 +183,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 /* Group standings */
 .standings {
   margin: 0 16px 10px;
-  background: var(--card);
+  background: var(--ink-2);
   border-radius: 22px;
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -193,9 +193,9 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   grid-template-columns: minmax(0, 1fr) 38px 32px 34px 32px 32px;
   gap: 6px;
   align-items: center;
-  padding: 11px 14px;
-  border-bottom: 1px solid var(--line-2);
-  color: var(--ink-2);
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--ink-3);
+  color: var(--ink-3);
   font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -215,12 +215,13 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   text-align: left;
+  font-size: 10px;
 }
 .standings__flag {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -234,12 +235,12 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--ink);
-  font-size: 13px;
+  color: var(--card);
+  font-size: 14px;
   font-weight: 700;
 }
 .standings__pts {
-  color: var(--ink);
+  color: var(--card);
   font-weight: 800;
 }
 
