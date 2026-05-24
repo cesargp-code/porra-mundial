@@ -36,15 +36,15 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 }
 
 .bottom-logo {
-  max-width: 430px;
+  max-width: 300px;
   margin: 0 auto;
-  padding: 24px 0 32px;
+  padding: 24px 16px 32px;
   display: flex;
   justify-content: center;
   line-height: 0;
 }
 .bottom-logo img {
-  width: 62px;
+  width: 100%;
   height: auto;
 }
 
@@ -52,7 +52,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .screen {
   max-width: 430px;
   margin: 0 auto;
-  min-height: calc(100vh - 151px);
+  /* min-height: calc(100vh - 151px);*/
   background: var(--bg);
   position: relative;
   padding-bottom: 24px;
@@ -66,10 +66,8 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   justify-content: space-between;
   position: sticky;
   top: 0;
-  background:
-    linear-gradient(rgba(216, 242, 74, 0.8), rgba(216, 242, 74, 0.8)),
-    url('/img/bg_wc2026.png') no-repeat top / 100% auto,
-    var(--lime);
+  background:var(--lime);
+  border-radius:0 0 5px 5px;
   z-index: 20;
 }
 .appbar--with-tabs {
@@ -77,6 +75,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   padding: 12px 16px 10px;
   overflow: visible;
 }
+/*
 .appbar--with-tabs::after {
   content: "";
   position: absolute;
@@ -89,6 +88,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
     url('/img/bg_wc2026.png') no-repeat top / 100% auto,
     var(--lime);
 }
+*/
 .appbar__row {
   display: flex;
   align-items: center;
@@ -568,6 +568,11 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .rtabs__page {
   width: 50%;
   flex-shrink: 0;
+}
+.rtabs:not(.rtabs--preserve-sticky) .rtabs__page[aria-hidden="true"] {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
 }
 .rtabs--preserve-sticky .rtabs__viewport {
   overflow: visible;

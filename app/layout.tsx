@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <footer className="bottom-logo" aria-label="Porra Mundial">
-          <Image src="/img/bottom_logo.png" alt="" width={62} height={95} />
+          <Image src="/img/bottom_logo2.png" alt="" width={667} height={385} />
         </footer>
       </body>
     </html>
