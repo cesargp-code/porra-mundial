@@ -48,6 +48,48 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   height: auto;
 }
 
+.offline-screen {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+}
+.offline-panel {
+  width: 100%;
+  text-align: center;
+}
+.offline-panel img {
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+.offline-panel h1 {
+  margin: 22px 0 8px;
+  font-size: 28px;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+.offline-panel p {
+  margin: 0 auto;
+  max-width: 320px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.offline-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  margin-top: 22px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+}
+
 /* App shell */
 .screen {
   max-width: 430px;
@@ -405,10 +447,6 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .compact__meta--missing { color: var(--red); font-weight: 600; }
 .compact__meta--in { color: var(--green); font-weight: 600; }
 .compact__meta--muted { color: var(--ink-3); }
-
-/* ===== Account page ===== */
-.me { padding: 24px 20px; }
-.me__signout { width: 100%; }
 
 /* User tab — stat sections */
 .user-tab {
@@ -1386,4 +1424,11 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   font-size: 12px;
   color: var(--ink-3);
   line-height: 1.45;
+}
+
+/* ===== Account page ===== */
+.me { padding: 24px 20px; }
+.me__signout {
+  width: 100%;
+  background: var(--red);
 }
