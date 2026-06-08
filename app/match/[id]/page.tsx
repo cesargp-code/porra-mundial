@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
 import { teamLabel } from "@/components/flags/index";
+import { MatchAutoRefresh } from "@/components/MatchAutoRefresh";
 import { DetailTopbar } from "@/components/MatchDetail/DetailTopbar";
 import { Hero } from "@/components/MatchDetail/Hero";
 import { PlayerRow } from "@/components/MatchDetail/PlayerRow";
@@ -173,6 +174,7 @@ export default async function MatchDetailPage({
 
   return (
     <div className="screen" data-screen-label={`Detail · ${detailState}`}>
+      <MatchAutoRefresh matchId={match.id} kickoff={match.kickoff.toISOString()} />
       <DetailTopbar
         when={whenLabel(match.kickoff)}
         where={venueLabel(match.stadium, match.stadiumCity)}

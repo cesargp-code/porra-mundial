@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { DayHeader } from "@/components/DayHeader";
 import { GroupStandingsTable } from "@/components/GroupStandingsTable";
 import { MatchCard } from "@/components/MatchCard";
+import { MatchAutoRefresh } from "@/components/MatchAutoRefresh";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
 import { sortGroupStandings } from "@/lib/groupStandings";
 import {
@@ -47,6 +48,7 @@ export default async function MatchListPage({
   };
 
   const matches = rows.map((r) => toUiMatch(r, ctx));
+  const nextKickoff = matches.find((match) => match.kickoff.getTime() > Date.now())?.kickoff;
   const groups = groupByDay(matches);
   const tournamentGroups = groupByTournamentGroup(matches);
   const standingsByGroup = new Map<string, typeof groupStandings>();
@@ -60,6 +62,7 @@ export default async function MatchListPage({
 
   return (
     <div className="screen" data-screen-label="01 Match List">
+      <MatchAutoRefresh kickoff={nextKickoff?.toISOString()} />
       <SegmentedTabs
         ariaLabel="Vista de partidos"
         leftLabel="Por fecha"
