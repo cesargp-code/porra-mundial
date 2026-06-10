@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import type { MouseEvent } from "react";
 
 import { Flag, teamLabel } from "./flags";
 import { GroupPressure } from "./GroupPressure";
 import { PointsLine } from "./PointsLine";
 import { StatusPill } from "./StatusPill";
 import { compactDateTimeLabel, timeLabel } from "@/lib/format";
+import { MATCH_LIST_RETURN_KEY } from "@/lib/matchListNavigation";
 import type { UiMatch } from "@/lib/matches";
 
 type MatchCardTimeFormat = "time" | "compact-date-time";
@@ -27,13 +31,34 @@ export function MatchCard({
   const awayWin = showScore && (awayScore as number) > (homeScore as number);
   const className = `card card--compact card--${state}`;
 
+  function rememberListPosition(event: MouseEvent<HTMLAnchorElement>) {
+    try {
+      sessionStorage.setItem(
+        MATCH_LIST_RETURN_KEY,
+        JSON.stringify({
+          listUrl: `${window.location.pathname}${window.location.search}`,
+          matchId: match.id,
+          scrollY: window.scrollY,
+          viewportTop: event.currentTarget.getBoundingClientRect().top,
+        }),
+      );
+    } catch {
+      // History restoration remains available when storage is unavailable.
+    }
+  }
+
   const Wrapper = ({ children }: { children: React.ReactNode }) =>
     state === "locked" ? (
       <article className={className} aria-disabled="true">
         {children}
       </article>
     ) : (
-      <Link href={`/match/${match.id}?from=list`} className={className}>
+      <Link
+        href={`/match/${match.id}?from=list`}
+        className={className}
+        data-match-id={match.id}
+        onClick={rememberListPosition}
+      >
         {children}
       </Link>
     );

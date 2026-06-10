@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { DayHeader } from "@/components/DayHeader";
 import { GroupStandingsTable } from "@/components/GroupStandingsTable";
 import { MatchCard } from "@/components/MatchCard";
+import { MatchListScrollRestoration } from "@/components/MatchListScrollRestoration";
 import { MatchAutoRefresh } from "@/components/MatchAutoRefresh";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
 import { sortGroupStandings } from "@/lib/groupStandings";
@@ -62,6 +63,7 @@ export default async function MatchListPage({
 
   return (
     <div className="screen" data-screen-label="01 Match List">
+      <MatchListScrollRestoration />
       <MatchAutoRefresh kickoff={nextKickoff?.toISOString()} />
       <SegmentedTabs
         ariaLabel="Vista de partidos"
