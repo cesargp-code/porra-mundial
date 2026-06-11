@@ -11,24 +11,29 @@ const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
 
-// Polling policy:
-// - Kickoff itself is handled by the app from kickoff_utc, so API polling is
-//   mostly for score freshness and newly resolved knockout teams.
-// - Use the shortest applicable interval across all matches, keeping the daily
-//   free-tier budget safe while giving live knockout matches a better feel.
-const IDLE_TOURNAMENT_POLL_MIN = 8 * 60;
+// Polling policy for the 500-call daily API allowance:
+// - Cron invokes this function every minute, but only syncMatches() spends an
+//   upstream call. decide() uses the fixture schedule to throttle those calls.
+// - The shortest applicable interval wins when match windows overlap.
+// - The closing windows use one-minute polling only where late finishes, extra
+//   time, or penalties make that freshness valuable. A full-schedule simulation
+//   peaks at 442 calls in any rolling 24 hours, leaving a 58-call reserve.
+const IDLE_TOURNAMENT_POLL_MIN = 6 * 60;
 const SAME_DAY_POLL_MIN = 60;
-const NEAR_KICKOFF_MIN = 2 * 60;
-const NEAR_KICKOFF_POLL_MIN = 30;
-const OPENING_WINDOW_MIN = 10;
-const OPENING_POLL_MIN = 5;
-const GROUP_LIVE_POLL_MIN = 10;
-const KO_LIVE_POLL_MIN = 7;
-const CLOSING_POLL_MIN = 5;
-const STALE_UNRESOLVED_POLL_MIN = 30;
+const NEAR_KICKOFF_MIN = 60;
+const NEAR_KICKOFF_POLL_MIN = 10;
+const KICKOFF_WARMUP_MIN = 15;
+const KICKOFF_WARMUP_POLL_MIN = 5;
+const LIVE_POLL_MIN = 2;
+const GROUP_CLOSING_START_MIN = 120;
+const KO_CLOSING_START_MIN = 135;
+const CLOSING_POLL_MIN = 1;
+const COMPLETION_GRACE_MIN = 45;
+const COMPLETION_GRACE_POLL_MIN = 15;
+const STALE_UNRESOLVED_POLL_MIN = 60;
 const TOURNAMENT_MARGIN_MIN = 7 * 24 * 60;
-const GROUP_DURATION = 110; // 90 + stoppage
-const KO_DURATION = 180; // 90 + ET + HT + pens + buffer
+const GROUP_DURATION_MIN = 135; // 90 + half-time + stoppage/delay margin
+const KO_DURATION_MIN = 180; // regulation + ET + penalties + delay margin
 
 type MatchRow = {
   kickoff_utc: string;
@@ -52,7 +57,13 @@ function isKnockout(round: string) {
 }
 
 function expectedDurationMin(round: string) {
-  return isKnockout(round) ? KO_DURATION : GROUP_DURATION;
+  return isKnockout(round) ? KO_DURATION_MIN : GROUP_DURATION_MIN;
+}
+
+function closingWindowStartMin(round: string) {
+  return isKnockout(round)
+    ? KO_CLOSING_START_MIN
+    : GROUP_CLOSING_START_MIN;
 }
 
 function needForMatch(now: Date, match: MatchRow): SyncNeed | null {
@@ -61,30 +72,42 @@ function needForMatch(now: Date, match: MatchRow): SyncNeed | null {
   const minSinceKickoff = minutesBetween(now, kickoff);
 
   if (match.status !== "completed" && minSinceKickoff >= 0) {
-    if (minSinceKickoff <= OPENING_WINDOW_MIN) {
+    const expectedDuration = expectedDurationMin(match.round);
+
+    if (minSinceKickoff <= expectedDuration) {
+      const closing = minSinceKickoff >= closingWindowStartMin(match.round);
       return {
-        threshold: OPENING_POLL_MIN,
-        reason: "opening kickoff window",
+        threshold: closing ? CLOSING_POLL_MIN : LIVE_POLL_MIN,
+        reason: closing
+          ? isKnockout(match.round)
+            ? "knockout closing window"
+            : "group closing window"
+          : isKnockout(match.round)
+            ? "knockout match live window"
+            : "group match live window",
         priority: 1,
       };
     }
 
-    const regularLiveThreshold = isKnockout(match.round)
-      ? KO_LIVE_POLL_MIN
-      : GROUP_LIVE_POLL_MIN;
-    const liveThreshold =
-      minSinceKickoff >= expectedDurationMin(match.round)
-        ? CLOSING_POLL_MIN
-        : regularLiveThreshold;
-    const staleThreshold =
-      minSinceKickoff > expectedDurationMin(match.round) + 60
-        ? STALE_UNRESOLVED_POLL_MIN
-        : liveThreshold;
+    const inCompletionGrace =
+      minSinceKickoff <= expectedDuration + COMPLETION_GRACE_MIN;
 
     return {
-      threshold: staleThreshold,
-      reason: isKnockout(match.round) ? "knockout match unresolved" : "group match unresolved",
+      threshold: inCompletionGrace
+        ? COMPLETION_GRACE_POLL_MIN
+        : STALE_UNRESOLVED_POLL_MIN,
+      reason: inCompletionGrace
+        ? "awaiting completed status"
+        : "stale unresolved match",
       priority: 2,
+    };
+  }
+
+  if (minToKickoff > 0 && minToKickoff <= KICKOFF_WARMUP_MIN) {
+    return {
+      threshold: KICKOFF_WARMUP_POLL_MIN,
+      reason: "kickoff warmup",
+      priority: 3,
     };
   }
 
@@ -92,7 +115,7 @@ function needForMatch(now: Date, match: MatchRow): SyncNeed | null {
     return {
       threshold: NEAR_KICKOFF_POLL_MIN,
       reason: "near kickoff",
-      priority: 3,
+      priority: 4,
     };
   }
 
@@ -100,7 +123,7 @@ function needForMatch(now: Date, match: MatchRow): SyncNeed | null {
     return {
       threshold: SAME_DAY_POLL_MIN,
       reason: "same-day upcoming match",
-      priority: 4,
+      priority: 5,
     };
   }
 
@@ -121,7 +144,7 @@ function idleTournamentNeed(now: Date, matches: MatchRow[]): SyncNeed | null {
   return {
     threshold: IDLE_TOURNAMENT_POLL_MIN,
     reason: "idle tournament fixture refresh",
-    priority: 5,
+    priority: 6,
   };
 }
 

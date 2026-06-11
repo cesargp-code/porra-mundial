@@ -49,23 +49,24 @@ Scenario baked in: goals at 23' (BRA 1-0) and 67' (ARG 1-1), draw through ET, BR
 
 ## API Polling Constraints
 
-**Free tier: 100 requests/day.** `GET /matches` returns all 104 matches in one call — always use this, never fetch individual matches.
+**API allowance: 500 requests/day.** `GET /matches` returns all 104 matches in one call — always use this, never fetch individual matches.
 
 **Polling strategy (Supabase scheduled Edge Function `sync-matches`):**
 
-- **Inactive periods** (no matches in the next 2+ hours): poll once every 2–4 hours
-- **Pre-match window** (≤1 hour before first kickoff of the day): poll every 15 min
-- **Active match window** (from first kickoff until last expected final whistle): poll every 5–10 min
-- **Post-day cooldown** (1 hour after last match ends): back to low frequency
+- **Inactive tournament periods:** poll every 6 hours
+- **Match in the next 24 hours:** poll every 60 min
+- **Pre-match window (≤1 hour):** poll every 10 min; every 5 min in the final 15 min
+- **Ordinary live window:** poll every 2 min
+- **Closing window:** poll every 1 min from 120' for group matches and 135' for knockout matches
+- **Completion grace:** poll every 15 min for 45 min, then hourly if a match remains unresolved
 
-Match duration estimates:
-- Group stage: 90 min + ~10 min stoppage. **No extra time or penalties.**
-- Knockout (R32 through Final): up to 120 min ET + ~15 min stoppage + penalties (~30 min). Budget 3 hours per match.
+Match schedule windows:
+- Group stage: reserve 135 min from kickoff for half-time, stoppage, and delays. **No extra time or penalties.**
+- Knockout (R32 through Final): reserve 180 min for regulation, ET, penalties, and delays.
 
-**Daily query budget target: ≤ 80 queries** (leave 20 as buffer).
+**Rolling 24-hour budget target: ≤ 450 calls** (leave at least 50 as buffer).
 
-Group stage: at most 4 matches/day → active window ≤ ~6 hours → ≤ ~36 polls at 10-min cadence.  
-Knockout stages: 1–4 matches/day in tighter windows — budget is comfortable.
+The full 104-match schedule was simulated minute-by-minute. The selected policy peaks at 442 `/matches` calls in any rolling 24-hour window, leaving 58 calls for retries, manual syncs, and other API endpoints.
 
 ## Tournament Overview
 
@@ -234,4 +235,3 @@ Frontend (Vercel)
 - **Group stage: no extra time / penalties.** Only predict home/away score.
 - **Knockout stage:** predict home/away score (after 90 min); if a draw, also predict which team wins on penalties (no score prediction for extra time).
 - Teams in later knockout rounds may be TBD (`home_team: null`) — the UI must handle this gracefully.
-
