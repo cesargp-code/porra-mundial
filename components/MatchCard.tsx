@@ -96,13 +96,19 @@ export function MatchCard({
         {state === "finished" && (
           <>
             <StatusPill kind="finished">Terminado</StatusPill>
-            <PointsLine value={match.userPoints} />
+            <PointsLine value={match.userPoints} played={match.userPrediction !== null} />
           </>
         )}
         {state === "live" && (
           <>
-            <StatusPill kind="live">En juego</StatusPill>
-            <PointsLine value={match.userPoints} provisional />
+            <StatusPill kind="live">
+              {homeScore ?? 0} - {awayScore ?? 0}
+            </StatusPill>
+            <span className="compact__meta">
+              {match.userPrediction
+                ? `Tu predicción ${match.userPrediction.home} - ${match.userPrediction.away}`
+                : "No jugaste"}
+            </span>
           </>
         )}
         {state === "missing" && (
