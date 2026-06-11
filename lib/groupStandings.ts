@@ -7,6 +7,8 @@ type HeadToHeadStats = {
   goalsFor: number;
 };
 
+type MutableStanding = DbGroupStanding;
+
 function teamKey(code: string | null, name: string | null) {
   return (code ?? name ?? "").trim().toUpperCase();
 }
@@ -35,6 +37,7 @@ function headToHeadStats(
   for (const key of tiedKeys) stats.set(key, emptyStats());
 
   for (const match of groupMatches) {
+    if (match.state !== "finished") continue;
     if (match.homeScore === null || match.awayScore === null) continue;
 
     const homeKey = teamKey(match.homeCode, match.homeName);
@@ -46,6 +49,59 @@ function headToHeadStats(
   }
 
   return stats;
+}
+
+function applyResult(
+  standing: MutableStanding,
+  goalsFor: number,
+  goalsAgainst: number
+) {
+  standing.played += 1;
+  standing.goals_for += goalsFor;
+  standing.goals_against += goalsAgainst;
+  standing.goal_difference += goalsFor - goalsAgainst;
+
+  if (goalsFor > goalsAgainst) {
+    standing.won += 1;
+    standing.points += 3;
+  } else if (goalsFor === goalsAgainst) {
+    standing.drawn += 1;
+    standing.points += 1;
+  } else {
+    standing.lost += 1;
+  }
+}
+
+export function calculateGroupStandings(
+  standings: DbGroupStanding[],
+  groupMatches: UiMatch[]
+): DbGroupStanding[] {
+  const calculated = standings.map((standing) => ({
+    ...standing,
+    played: 0,
+    won: 0,
+    drawn: 0,
+    lost: 0,
+    goals_for: 0,
+    goals_against: 0,
+    goal_difference: 0,
+    points: 0,
+  }));
+  const byTeam = new Map(calculated.map((standing) => [standingKey(standing), standing]));
+
+  for (const match of groupMatches) {
+    if (match.state !== "finished") continue;
+    if (match.homeScore === null || match.awayScore === null) continue;
+
+    const home = byTeam.get(teamKey(match.homeCode, match.homeName));
+    const away = byTeam.get(teamKey(match.awayCode, match.awayName));
+    if (!home || !away) continue;
+
+    applyResult(home, match.homeScore, match.awayScore);
+    applyResult(away, match.awayScore, match.homeScore);
+  }
+
+  return sortGroupStandings(calculated, groupMatches);
 }
 
 function compareByOverall(a: DbGroupStanding, b: DbGroupStanding) {

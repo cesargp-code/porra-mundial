@@ -7,7 +7,7 @@ import { MatchCard } from "@/components/MatchCard";
 import { MatchListScrollRestoration } from "@/components/MatchListScrollRestoration";
 import { MatchAutoRefresh } from "@/components/MatchAutoRefresh";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
-import { sortGroupStandings } from "@/lib/groupStandings";
+import { calculateGroupStandings } from "@/lib/groupStandings";
 import {
   groupByDay,
   groupByTournamentGroup,
@@ -138,7 +138,10 @@ export default async function MatchListPage({
               <section key={g.key} className="day-group">
                 <DayHeader label={g.label} />
                 <GroupStandingsTable
-                  standings={sortGroupStandings(standingsByGroup.get(g.key) ?? [], g.items)}
+                  standings={calculateGroupStandings(
+                    standingsByGroup.get(g.key) ?? [],
+                    g.items
+                  )}
                 />
                 <div className="list">
                   {g.items.map((m) => (
