@@ -24,6 +24,7 @@ const OPENING_WINDOW_MIN = 10;
 const OPENING_POLL_MIN = 5;
 const GROUP_LIVE_POLL_MIN = 10;
 const KO_LIVE_POLL_MIN = 7;
+const CLOSING_POLL_MIN = 5;
 const STALE_UNRESOLVED_POLL_MIN = 30;
 const TOURNAMENT_MARGIN_MIN = 7 * 24 * 60;
 const GROUP_DURATION = 110; // 90 + stoppage
@@ -68,9 +69,13 @@ function needForMatch(now: Date, match: MatchRow): SyncNeed | null {
       };
     }
 
-    const liveThreshold = isKnockout(match.round)
+    const regularLiveThreshold = isKnockout(match.round)
       ? KO_LIVE_POLL_MIN
       : GROUP_LIVE_POLL_MIN;
+    const liveThreshold =
+      minSinceKickoff >= expectedDurationMin(match.round)
+        ? CLOSING_POLL_MIN
+        : regularLiveThreshold;
     const staleThreshold =
       minSinceKickoff > expectedDurationMin(match.round) + 60
         ? STALE_UNRESOLVED_POLL_MIN
