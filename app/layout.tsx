@@ -3,7 +3,6 @@ import { Google_Sans } from "next/font/google";
 import Image from "next/image";
 
 import { PwaInit } from "@/components/PwaInit";
-import { ThemeColorSync } from "@/components/ThemeColorSync";
 import "./globals.css";
 
 const googleSans = Google_Sans({
@@ -52,7 +51,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={googleSans.variable}>
       <body>
         <PwaInit />
-        <ThemeColorSync />
         {children}
         <footer className="bottom-logo" aria-label="Porra Mundial">
           <Image src="/img/bottom_logo2.png" alt="" width={667} height={385} />

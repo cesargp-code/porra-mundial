@@ -25,7 +25,8 @@ export function MatchCard({
     timeFormat === "compact-date-time"
       ? compactDateTimeLabel(match.kickoff)
       : timeLabel(match.kickoff);
-  const showScore = state === "finished" && homeScore !== null && awayScore !== null;
+  const showScore =
+    (state === "finished" || state === "live") && homeScore !== null && awayScore !== null;
   const homeWin = showScore && (homeScore as number) > (awayScore as number);
   const awayWin = showScore && (awayScore as number) > (homeScore as number);
   const className = `card card--compact card--${state}`;
