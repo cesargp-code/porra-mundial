@@ -1,4 +1,5 @@
 import { dayKey, dayLabel } from "./format";
+import { isMatchActive } from "./matchState";
 import { computePoints } from "./scoring";
 import type { DbMatch, DbPrediction } from "./supabase/types";
 
@@ -41,16 +42,19 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
   const awayMissing = !row.away_team || !row.away_team_code;
   const tbd = homeMissing || awayMissing;
   const kickoff = new Date(row.kickoff_utc);
-  const hasKickedOff = Date.now() >= kickoff.getTime();
+  const active = isMatchActive(row);
 
   const mine = ctx.myPredictions.get(row.id) ?? null;
 
   let state: CardState;
   if (row.status === "completed") state = "finished";
   else if (tbd) state = "locked";
-  else if (row.status === "live" || hasKickedOff) state = "live";
+  else if (active) state = "live";
   else if (mine) state = "predicted";
   else state = "missing";
+
+  const homeScore = state === "live" ? (row.home_score ?? 0) : row.home_score;
+  const awayScore = state === "live" ? (row.away_score ?? 0) : row.away_score;
 
   // For 'live' the DB trigger hasn't persisted points yet — show preliminary
   // points based on the current score. For 'finished' use the stored value.
@@ -58,8 +62,8 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
     ? state === "live"
       ? computePoints({
           round: row.round,
-          homeScore: row.home_score,
-          awayScore: row.away_score,
+          homeScore,
+          awayScore,
           homePen: row.home_pen,
           awayPen: row.away_pen,
           predHome: mine.home_score,
@@ -79,8 +83,8 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
     homeName: row.home_team ?? "—",
     awayName: row.away_team ?? "—",
     kickoff,
-    homeScore: row.home_score,
-    awayScore: row.away_score,
+    homeScore,
+    awayScore,
     round: row.round,
     groupName: row.group_name,
     stadium: row.stadium,

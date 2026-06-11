@@ -5,6 +5,7 @@ import { RankingTabs } from "@/components/RankingTabs";
 import { ScoringSheet } from "@/components/ScoringSheet";
 import { SyncGroupsButton } from "@/components/SyncGroupsButton";
 import { SyncMatchesButton } from "@/components/SyncMatchesButton";
+import { isMatchActive } from "@/lib/matchState";
 import { getPredictionStats } from "@/lib/predictionStats";
 import {
   getCurrentUserId,
@@ -70,7 +71,8 @@ export default async function MePage() {
   ).length;
   const availableMissing = matches.filter(
     (m) =>
-      m.status === "scheduled" &&
+      m.status !== "completed" &&
+      !isMatchActive(m) &&
       m.home_team &&
       m.away_team &&
       !myPredictionByMatchId.has(m.id)

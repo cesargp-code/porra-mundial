@@ -25,8 +25,7 @@ export function MatchCard({
     timeFormat === "compact-date-time"
       ? compactDateTimeLabel(match.kickoff)
       : timeLabel(match.kickoff);
-  const showScore =
-    (state === "finished" || state === "live") && homeScore !== null && awayScore !== null;
+  const showScore = state === "finished" && homeScore !== null && awayScore !== null;
   const homeWin = showScore && (homeScore as number) > (awayScore as number);
   const awayWin = showScore && (awayScore as number) > (homeScore as number);
   const className = `card card--compact card--${state}`;
@@ -101,9 +100,7 @@ export function MatchCard({
         )}
         {state === "live" && (
           <>
-            <StatusPill kind="live">
-              {homeScore ?? 0} - {awayScore ?? 0}
-            </StatusPill>
+            <StatusPill kind="live">En juego</StatusPill>
             <span className="compact__meta">
               {match.userPrediction
                 ? `Tu predicción ${match.userPrediction.home} - ${match.userPrediction.away}`

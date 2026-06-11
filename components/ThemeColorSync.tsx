@@ -2,7 +2,9 @@
 
 import { useEffect } from "react";
 
+import { isMatchActive } from "@/lib/matchState";
 import { createClient } from "@/lib/supabase/client";
+import type { MatchStatus } from "@/lib/supabase/types";
 
 const DEFAULT_THEME_COLOR = "#D8F24A";
 const LIVE_THEME_COLOR = "#E89A1A";
@@ -23,17 +25,35 @@ export function ThemeColorSync() {
   useEffect(() => {
     const supabase = createClient();
     let disposed = false;
+    let kickoffTimer: number | undefined;
 
     async function refreshThemeColor() {
       const { data, error } = await supabase
         .from("matches")
-        .select("id")
-        .eq("status", "live")
-        .limit(1);
+        .select("kickoff_utc, status")
+        .neq("status", "completed");
 
       if (disposed || error) return;
 
-      setThemeColor(data && data.length > 0 ? LIVE_THEME_COLOR : DEFAULT_THEME_COLOR);
+      const now = Date.now();
+      const unresolved = (data ?? []) as Array<{
+        kickoff_utc: string;
+        status: MatchStatus;
+      }>;
+      setThemeColor(
+        unresolved.some((match) => isMatchActive(match, now))
+          ? LIVE_THEME_COLOR
+          : DEFAULT_THEME_COLOR
+      );
+
+      if (kickoffTimer) window.clearTimeout(kickoffTimer);
+      const nextKickoff = unresolved
+        .map((match) => new Date(match.kickoff_utc).getTime())
+        .filter((kickoff) => kickoff > now)
+        .sort((a, b) => a - b)[0];
+      if (nextKickoff) {
+        kickoffTimer = window.setTimeout(refreshThemeColor, nextKickoff - now + 250);
+      }
     }
 
     refreshThemeColor();
@@ -54,7 +74,7 @@ export function ThemeColorSync() {
     return () => {
       disposed = true;
       window.clearInterval(interval);
-      setThemeColor(DEFAULT_THEME_COLOR);
+      if (kickoffTimer) window.clearTimeout(kickoffTimer);
       supabase.removeChannel(channel);
     };
   }, []);
