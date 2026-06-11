@@ -14,11 +14,13 @@ import {
   toUiMatch,
   type MatchListContext,
 } from "@/lib/matches";
+import { rankPlayers } from "@/lib/ranking";
 import {
   getCurrentUserId,
   getGroupStandings,
   getMatches,
   getMyPredictions,
+  getPointsByUser,
   getPredictorCounts,
   getProfiles,
 } from "@/lib/supabase/server";
@@ -34,12 +36,20 @@ export default async function MatchListPage({
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const [rows, profiles, myPredictions, predictorCounts, groupStandings] = await Promise.all([
+  const [
+    rows,
+    profiles,
+    myPredictions,
+    predictorCounts,
+    groupStandings,
+    pointsByUser,
+  ] = await Promise.all([
     getMatches(),
     getProfiles(),
     getMyPredictions(userId),
     getPredictorCounts(),
     getGroupStandings(),
+    getPointsByUser(),
   ]);
 
   const ctx: MatchListContext = {
@@ -58,8 +68,10 @@ export default async function MatchListPage({
     standingsByGroup.set(key, [...(standingsByGroup.get(key) ?? []), standing]);
   }
 
-  const totalPoints = myPredictions.reduce((sum, p) => sum + (p.points ?? 0), 0);
-  const rank = 1; // leaderboard not implemented yet
+  const ranked = rankPlayers(profiles, pointsByUser);
+  const currentPlayer = ranked.find((player) => player.id === userId);
+  const totalPoints = currentPlayer?.points ?? 0;
+  const rank = currentPlayer?.rank ?? ranked.length + 1;
 
   return (
     <div className="screen" data-screen-label="01 Match List">

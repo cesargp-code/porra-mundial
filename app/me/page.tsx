@@ -7,6 +7,7 @@ import { SyncGroupsButton } from "@/components/SyncGroupsButton";
 import { SyncMatchesButton } from "@/components/SyncMatchesButton";
 import { isMatchActive } from "@/lib/matchState";
 import { getPredictionStats } from "@/lib/predictionStats";
+import { rankPlayers } from "@/lib/ranking";
 import {
   getCurrentUserId,
   getMatches,
@@ -49,13 +50,7 @@ export default async function MePage() {
   const me = profiles.find((p) => p.id === userId);
   const userName = me?.nickname ?? "Tú";
 
-  const ranked = profiles
-    .map((p) => ({
-      id: p.id,
-      name: p.nickname,
-      points: pointsByUser.get(p.id) ?? 0,
-    }))
-    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+  const ranked = rankPlayers(profiles, pointsByUser);
   const prizePot = profiles.length * 10;
 
   const myPredictionByMatchId = new Map(
@@ -110,12 +105,12 @@ export default async function MePage() {
                     Bote acumulado {potFmt.format(prizePot)}
                   </span>
                 </div>
-                {ranked.map((p, i) => (
+                {ranked.map((p) => (
                   <div
                     key={p.id}
                     className={`player player--rank${p.id === userId ? " player--you" : ""}`}
                   >
-                    <div className="player__rank">{i + 1}º</div>
+                    <div className="player__rank">{p.rank}º</div>
                     <div className="player__name">{p.name}</div>
                     <div
                       className={`player__points ${p.points > 0 ? "player__points--win" : "player__points--zero"}`}
