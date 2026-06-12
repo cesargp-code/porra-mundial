@@ -90,6 +90,90 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   box-shadow: var(--shadow);
 }
 
+/* One-time PWA install prompt */
+.pwa-install {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.pwa-install__backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba(14, 14, 14, 0.48);
+  cursor: default;
+}
+.pwa-install__dialog {
+  position: relative;
+  width: min(100%, 360px);
+  padding: 26px 22px calc(22px + env(safe-area-inset-bottom));
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: 0 20px 60px rgba(14, 14, 14, 0.28);
+  text-align: center;
+}
+.pwa-install__icon {
+  display: block;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  border-radius: 18px;
+}
+.pwa-install__dialog h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.pwa-install__dialog p {
+  margin: 12px auto 0;
+  max-width: 300px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.pwa-install__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 22px;
+}
+.pwa-install__primary,
+.pwa-install__secondary {
+  min-height: 46px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.pwa-install__primary {
+  border: 0;
+  background: var(--lime);
+  color: var(--ink);
+}
+.pwa-install__secondary {
+  border: 1.5px solid var(--line);
+  background: transparent;
+  color: var(--ink-2);
+}
+.pwa-install__primary:active,
+.pwa-install__secondary:active {
+  transform: scale(0.97);
+}
+.pwa-install__primary:focus-visible,
+.pwa-install__secondary:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
 /* App shell */
 .screen {
   max-width: 430px;
