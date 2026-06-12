@@ -197,21 +197,15 @@ const FlagESP = ({ id }: FlagSvgProps) => (
   <ClipFlag id={id}>
     <rect width="60" height="60" fill="#C60B1E" />
     <rect y="15" width="60" height="30" fill="#FFC400" />
-    <g strokeLinejoin="round">
-      <g stroke="#AA151B" strokeWidth="0.7">
-        <path d="M11.5 24.5h2.5v12h-2.5zM10.8 23h3.9v2h-3.9zM10.8 36h3.9v2h-3.9z" fill="#F1F0E6" />
-        <path d="M25 24.5h2.5v12H25zM24.3 23h3.9v2h-3.9zM24.3 36h3.9v2h-3.9z" fill="#F1F0E6" />
-      </g>
-      <path d="M14.8 23h9.4v10.2c0 4.4-3.1 7.1-4.7 7.8-1.6-.7-4.7-3.4-4.7-7.8Z" fill="#AA151B" stroke="#7A1017" strokeWidth="0.7" />
-      <path d="M15.7 23.9h3.4v5h-3.4zM19.9 23.9h3.4v5h-3.4z" fill="#F1BF00" />
-      <path d="M15.7 29.7h3.4v4.3h-3.4z" fill="#F1BF00" />
-      <path d="M19.9 29.7h3.4v4.3h-3.4z" fill="#F1F0E6" />
-      <path d="M15.8 34.7h7.4c-.5 2.2-2.2 4.1-3.7 5-1.5-.9-3.2-2.8-3.7-5Z" fill="#F1BF00" />
-      <ellipse cx="19.5" cy="32" rx="1.25" ry="2.2" fill="#00529F" stroke="#F1F0E6" strokeWidth="0.5" />
-      <path d="M15.3 21.2 17 18.8l2.5 2 2.5-2 1.7 2.4-1.2 1.6h-6Z" fill="#F1BF00" stroke="#AA151B" strokeWidth="0.7" />
-      <circle cx="17" cy="18.7" r="0.8" fill="#F1BF00" stroke="#AA151B" strokeWidth="0.5" />
-      <circle cx="19.5" cy="18.1" r="0.8" fill="#F1BF00" stroke="#AA151B" strokeWidth="0.5" />
-      <circle cx="22" cy="18.7" r="0.8" fill="#F1BF00" stroke="#AA151B" strokeWidth="0.5" />
+    <g>
+      <path d="M11.8 26h2.2v8.5h-2.2zM25 26h2.2v8.5H25z" fill="#F3E5B5" />
+      <path d="M11.2 24.8h3.4v1.8h-3.4zM11.2 34h3.4v1.8h-3.4zM24.4 24.8h3.4v1.8h-3.4zM24.4 34h3.4v1.8h-3.4z" fill="#F1BF00" />
+      <path d="M14.8 25.5h9.4v6.2c0 2.4-2.8 4.4-4.7 5.2-1.9-.8-4.7-2.8-4.7-5.2Z" fill="#AA151B" />
+      <path d="M15.7 26.3h3.3v2.7h-3.3zM20 26.3h3.3v2.7H20zM15.7 29.8H19v2.4h-3.3z" fill="#F1BF00" />
+      <path d="M20 29.8h3.3v2.4H20z" fill="#F3E5B5" />
+      <path d="M16.2 33h6.6c-.8 1.2-2.2 2.2-3.3 2.8-1.1-.6-2.5-1.6-3.3-2.8Z" fill="#F1BF00" />
+      <ellipse cx="19.5" cy="31.1" rx="1.1" ry="1.3" fill="#00529F" />
+      <path d="M15.6 24.5 16.8 22.4l2.7 1.6 2.7-1.6 1.2 2.1Z" fill="#AA151B" />
     </g>
   </ClipFlag>
 );
