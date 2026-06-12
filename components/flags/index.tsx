@@ -91,6 +91,7 @@ const FlagCAN = ({ id }: FlagSvgProps) => (
       stroke="#FF0000"
       strokeLinejoin="round"
       strokeWidth="0.8"
+      transform="translate(3.6 3.6) scale(0.88)"
     />
   </ClipFlag>
 );
@@ -196,7 +197,22 @@ const FlagESP = ({ id }: FlagSvgProps) => (
   <ClipFlag id={id}>
     <rect width="60" height="60" fill="#C60B1E" />
     <rect y="15" width="60" height="30" fill="#FFC400" />
-    <rect x="14" y="24" width="8" height="12" fill="#C60B1E" rx="1" />
+    <g strokeLinejoin="round">
+      <g stroke="#AA151B" strokeWidth="0.7">
+        <path d="M11.5 24.5h2.5v12h-2.5zM10.8 23h3.9v2h-3.9zM10.8 36h3.9v2h-3.9z" fill="#F1F0E6" />
+        <path d="M25 24.5h2.5v12H25zM24.3 23h3.9v2h-3.9zM24.3 36h3.9v2h-3.9z" fill="#F1F0E6" />
+      </g>
+      <path d="M14.8 23h9.4v10.2c0 4.4-3.1 7.1-4.7 7.8-1.6-.7-4.7-3.4-4.7-7.8Z" fill="#AA151B" stroke="#7A1017" strokeWidth="0.7" />
+      <path d="M15.7 23.9h3.4v5h-3.4zM19.9 23.9h3.4v5h-3.4z" fill="#F1BF00" />
+      <path d="M15.7 29.7h3.4v4.3h-3.4z" fill="#F1BF00" />
+      <path d="M19.9 29.7h3.4v4.3h-3.4z" fill="#F1F0E6" />
+      <path d="M15.8 34.7h7.4c-.5 2.2-2.2 4.1-3.7 5-1.5-.9-3.2-2.8-3.7-5Z" fill="#F1BF00" />
+      <ellipse cx="19.5" cy="32" rx="1.25" ry="2.2" fill="#00529F" stroke="#F1F0E6" strokeWidth="0.5" />
+      <path d="M15.3 21.2 17 18.8l2.5 2 2.5-2 1.7 2.4-1.2 1.6h-6Z" fill="#F1BF00" stroke="#AA151B" strokeWidth="0.7" />
+      <circle cx="17" cy="18.7" r="0.8" fill="#F1BF00" stroke="#AA151B" strokeWidth="0.5" />
+      <circle cx="19.5" cy="18.1" r="0.8" fill="#F1BF00" stroke="#AA151B" strokeWidth="0.5" />
+      <circle cx="22" cy="18.7" r="0.8" fill="#F1BF00" stroke="#AA151B" strokeWidth="0.5" />
+    </g>
   </ClipFlag>
 );
 
@@ -288,11 +304,39 @@ const FlagJPN = ({ id }: FlagSvgProps) => (
 const FlagKOR = ({ id }: FlagSvgProps) => (
   <ClipFlag id={id}>
     <rect width="60" height="60" fill="#FFFFFF" />
-    <circle cx="30" cy="30" r="10" fill="#CD2E3A" />
+    <circle cx="30" cy="30" r="10.5" fill="#CD2E3A" />
     <path
-      d="M20,30 a10,5 0 0,0 20,0 a5,5 0 0,1 -10,0 a5,5 0 0,0 -10,0"
+      d="M19.5 30A10.5 10.5 0 0 0 40.5 30 5.25 5.25 0 0 1 30 30 5.25 5.25 0 0 0 19.5 30Z"
       fill="#0047A0"
     />
+    <g fill="#000000">
+      <g transform="rotate(-34 15 15)">
+        <rect x="9" y="11" width="12" height="2" />
+        <rect x="9" y="14" width="12" height="2" />
+        <rect x="9" y="17" width="12" height="2" />
+      </g>
+      <g transform="rotate(34 45 15)">
+        <rect x="39" y="11" width="5" height="2" />
+        <rect x="46" y="11" width="5" height="2" />
+        <rect x="39" y="14" width="12" height="2" />
+        <rect x="39" y="17" width="5" height="2" />
+        <rect x="46" y="17" width="5" height="2" />
+      </g>
+      <g transform="rotate(34 15 45)">
+        <rect x="9" y="41" width="12" height="2" />
+        <rect x="9" y="44" width="5" height="2" />
+        <rect x="16" y="44" width="5" height="2" />
+        <rect x="9" y="47" width="12" height="2" />
+      </g>
+      <g transform="rotate(-34 45 45)">
+        <rect x="39" y="41" width="5" height="2" />
+        <rect x="46" y="41" width="5" height="2" />
+        <rect x="39" y="44" width="5" height="2" />
+        <rect x="46" y="44" width="5" height="2" />
+        <rect x="39" y="47" width="5" height="2" />
+        <rect x="46" y="47" width="5" height="2" />
+      </g>
+    </g>
   </ClipFlag>
 );
 
@@ -406,12 +450,12 @@ const FlagQAT = ({ id }: FlagSvgProps) => (
 
 const FlagRSA = ({ id }: FlagSvgProps) => (
   <ClipFlag id={id}>
-    <rect width="60" height="60" fill="#007A4D" />
-    <rect width="60" height="22" fill="#E03C31" />
-    <rect y="38" width="60" height="22" fill="#001489" />
-    <polygon points="0,0 30,30 0,60" fill="#000000" />
-    <polygon points="0,8 22,30 0,52" fill="#FFB81C" />
-    <polygon points="0,18 14,30 0,42" fill="#FFFFFF" />
+    <rect width="60" height="30" fill="#E03C31" />
+    <rect y="30" width="60" height="30" fill="#001489" />
+    <polygon points="0,3 29,24 60,24 60,36 29,36 0,57" fill="#FFFFFF" />
+    <polygon points="0,9 27,27 60,27 60,33 27,33 0,51" fill="#007A4D" />
+    <polygon points="0,13 23,30 0,47" fill="#FFB81C" />
+    <polygon points="0,18 16,30 0,42" fill="#000000" />
   </ClipFlag>
 );
 
