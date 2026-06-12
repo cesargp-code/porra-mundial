@@ -85,9 +85,12 @@ const FlagCAN = ({ id }: FlagSvgProps) => (
     <rect width="15" height="60" fill="#FF0000" />
     <rect x="15" width="30" height="60" fill="#FFFFFF" />
     <rect x="45" width="15" height="60" fill="#FF0000" />
-    <polygon
-      points="30,20 32,26 38,26 33,30 35,36 30,32 25,36 27,30 22,26 28,26"
+    <path
+      d="M30 13.5 33.1 20.1 36.5 18.3 35.1 25.6 41.6 23.4 39.4 28.2 43 30.2 36.1 35.9 37.5 40.2 31.5 38.9 31.5 46.5 28.5 46.5 28.5 38.9 22.5 40.2 23.9 35.9 17 30.2 20.6 28.2 18.4 23.4 24.9 25.6 23.5 18.3 26.9 20.1Z"
       fill="#FF0000"
+      stroke="#FF0000"
+      strokeLinejoin="round"
+      strokeWidth="0.8"
     />
   </ClipFlag>
 );
