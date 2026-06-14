@@ -6,7 +6,10 @@ import { ScoringSheet } from "@/components/ScoringSheet";
 import { SyncGroupsButton } from "@/components/SyncGroupsButton";
 import { SyncMatchesButton } from "@/components/SyncMatchesButton";
 import { isMatchActive } from "@/lib/matchState";
-import { getPredictionStats } from "@/lib/predictionStats";
+import {
+  getCompletedPredictionStats,
+  getPredictionStats,
+} from "@/lib/predictionStats";
 import { rankPlayers } from "@/lib/ranking";
 import {
   getCurrentUserId,
@@ -73,12 +76,7 @@ export default async function MePage() {
       !myPredictionByMatchId.has(m.id)
   ).length;
 
-  const exactPredictions = matches.filter((m) => {
-    if (m.status !== "completed") return false;
-    const p = myPredictionByMatchId.get(m.id);
-    if (!p) return false;
-    return p.home_score === m.home_score && p.away_score === m.away_score;
-  }).length;
+  const completedPredictionStats = getCompletedPredictionStats(matches, myPredictions);
 
   const userStats = getPredictionStats(myPredictions);
   const crowdStats = getPredictionStats(otherPredictions);
@@ -143,10 +141,24 @@ export default async function MePage() {
                       <strong>{availableMissing}</strong>
                     </div>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="stat-section">
+              <h2 className="stat-section__title">Predicción de partidos</h2>
+              <div className="hero hero--leaderboard">
+                <div className="players--embedded">
                   <div className="player">
-                    <div className="player__name">Predicciones exactas</div>
+                    <div className="player__name">Acertados 1X2</div>
                     <div className="player__points">
-                      <strong>{exactPredictions}</strong>
+                      <strong>{completedPredictionStats.correctResults}</strong>
+                    </div>
+                  </div>
+                  <div className="player">
+                    <div className="player__name">Acertados exactos</div>
+                    <div className="player__points">
+                      <strong>{completedPredictionStats.exactScores}</strong>
                     </div>
                   </div>
                 </div>

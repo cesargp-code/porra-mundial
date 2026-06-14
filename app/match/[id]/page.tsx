@@ -176,13 +176,10 @@ export default async function MatchDetailPage({
     homeTeam: row.home_team,
     awayTeam: row.away_team,
   });
-  const multiplierBanner =
-    multiplierDetails.multiplier > 1 ? (
-      <div className="hero__multiplier">
-        x{multiplierDetails.multiplier} {multiplierDetails.roundLabel}
-        {multiplierDetails.hasSpain && " + España"}
-      </div>
-    ) : null;
+  const showMultiplier = multiplierDetails.multiplier > 1;
+  const multiplierLabel = `${multiplierDetails.roundLabel}${
+    multiplierDetails.hasSpain ? " + España" : ""
+  }`;
 
   return (
     <div className="screen" data-screen-label={`Detail · ${detailState}`}>
@@ -192,7 +189,18 @@ export default async function MatchDetailPage({
         where={venueLabel(match.stadium, match.stadiumCity)}
       />
 
-      <div className={`hero hero--${detailState}`}>
+      <div
+        className={`hero hero--${detailState}${showMultiplier ? " hero--multiplier" : ""}`}
+      >
+        {showMultiplier && (
+          <span
+            className="hero__multiplier"
+            aria-label={`Multiplicador x${multiplierDetails.multiplier}: ${multiplierLabel}`}
+          >
+            <strong>x{multiplierDetails.multiplier}</strong>
+            {multiplierDetails.hasSpain ? "España" : multiplierDetails.roundLabel}
+          </span>
+        )}
         <Hero
           matchId={match.id}
           state={detailState}
@@ -216,7 +224,6 @@ export default async function MatchDetailPage({
             awayCode={match.awayCode}
           >
             <div className="hero__divider" />
-            {multiplierBanner}
             <div className="players players--embedded">
               {visiblePlayers.map((p) => (
                 <PlayerRow
@@ -232,7 +239,6 @@ export default async function MatchDetailPage({
         ) : (
           <>
             <div className="hero__divider" />
-            {multiplierBanner}
             <div className="players players--embedded">
               {visiblePlayers.map((p) => (
                 <PlayerRow

@@ -10,6 +10,7 @@ import { StatusPill } from "./StatusPill";
 import { compactDateTimeLabel, timeLabel } from "@/lib/format";
 import { MATCH_LIST_RETURN_KEY } from "@/lib/matchListNavigation";
 import type { UiMatch } from "@/lib/matches";
+import { getMatchMultiplier } from "@/lib/scoring";
 
 type MatchCardTimeFormat = "time" | "compact-date-time";
 
@@ -29,7 +30,18 @@ export function MatchCard({
     (state === "finished" || state === "live") && homeScore !== null && awayScore !== null;
   const homeWin = showScore && (homeScore as number) > (awayScore as number);
   const awayWin = showScore && (awayScore as number) > (homeScore as number);
-  const className = `card card--compact card--${state}`;
+  const multiplierDetails = getMatchMultiplier({
+    round: match.round,
+    homeTeam: match.homeName,
+    awayTeam: match.awayName,
+  });
+  const showMultiplier = multiplierDetails.multiplier > 1;
+  const className = `card card--compact card--${state}${
+    showMultiplier ? " card--multiplier" : ""
+  }`;
+  const multiplierLabel = `${multiplierDetails.roundLabel}${
+    multiplierDetails.hasSpain ? " + España" : ""
+  }`;
 
   function rememberListPosition(event: MouseEvent<HTMLAnchorElement>) {
     try {
@@ -65,6 +77,15 @@ export function MatchCard({
 
   return (
     <Wrapper>
+      {showMultiplier && (
+        <span
+          className="compact__multiplier"
+          aria-label={`Multiplicador x${multiplierDetails.multiplier}: ${multiplierLabel}`}
+        >
+          <strong>x{multiplierDetails.multiplier}</strong>
+          {multiplierDetails.hasSpain ? "España" : multiplierDetails.roundLabel}
+        </span>
+      )}
       <div className="compact__teams">
         <div className="compact__row">
           <div className="compact__flag">
