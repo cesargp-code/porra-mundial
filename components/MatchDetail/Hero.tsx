@@ -1,6 +1,5 @@
 import { Flag, teamLabel } from "../flags/index";
 import type { DetailState } from "./types";
-import { getMatchMultiplier } from "@/lib/scoring";
 
 type Props = {
   matchId: string;
@@ -13,7 +12,6 @@ type Props = {
   awayScore: number | null;
   homePen?: number | null;
   awayPen?: number | null;
-  round: string;
 };
 
 export function Hero({
@@ -27,14 +25,7 @@ export function Hero({
   awayScore,
   homePen,
   awayPen,
-  round,
 }: Props) {
-  const multiplierDetails = getMatchMultiplier({
-    round,
-    homeTeam: homeName,
-    awayTeam: awayName,
-  });
-  const showMultiplier = multiplierDetails.multiplier > 1;
   const showScore =
     (state === "finished" || state === "live") && homeScore !== null && awayScore !== null;
   const showPens =
@@ -56,12 +47,6 @@ export function Hero({
 
   return (
     <>
-      {showMultiplier && (
-        <div className="hero__multiplier">
-          x{multiplierDetails.multiplier} {multiplierDetails.roundLabel}
-          {multiplierDetails.hasSpain && " + España"}
-        </div>
-      )}
       <div className="hero__teams">
         <div className="hero__col">
           <div className="hero__flag">

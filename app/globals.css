@@ -783,7 +783,6 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   overflow: hidden;
 }
 .hero__multiplier {
-  margin: -26px 0 26px;
   padding: 5px 30px;
   background: var(--lime);
   color: var(--ink);

@@ -14,7 +14,7 @@ import type {
 } from "@/components/MatchDetail/types";
 import { venueLabel, whenLabel } from "@/lib/format";
 import { toUiMatch } from "@/lib/matches";
-import { computePoints } from "@/lib/scoring";
+import { computePoints, getMatchMultiplier } from "@/lib/scoring";
 import {
   getCurrentUserId,
   getMatchById,
@@ -171,6 +171,18 @@ export default async function MatchDetailPage({
   });
 
   const visiblePlayers = sortedPlayers;
+  const multiplierDetails = getMatchMultiplier({
+    round: row.round,
+    homeTeam: row.home_team,
+    awayTeam: row.away_team,
+  });
+  const multiplierBanner =
+    multiplierDetails.multiplier > 1 ? (
+      <div className="hero__multiplier">
+        x{multiplierDetails.multiplier} {multiplierDetails.roundLabel}
+        {multiplierDetails.hasSpain && " + España"}
+      </div>
+    ) : null;
 
   return (
     <div className="screen" data-screen-label={`Detail · ${detailState}`}>
@@ -192,7 +204,6 @@ export default async function MatchDetailPage({
           awayScore={awayScore}
           homePen={row.home_pen}
           awayPen={row.away_pen}
-          round={row.round}
         />
         {detailState === "upcoming" ? (
           <PredictRegion
@@ -205,6 +216,7 @@ export default async function MatchDetailPage({
             awayCode={match.awayCode}
           >
             <div className="hero__divider" />
+            {multiplierBanner}
             <div className="players players--embedded">
               {visiblePlayers.map((p) => (
                 <PlayerRow
@@ -220,6 +232,7 @@ export default async function MatchDetailPage({
         ) : (
           <>
             <div className="hero__divider" />
+            {multiplierBanner}
             <div className="players players--embedded">
               {visiblePlayers.map((p) => (
                 <PlayerRow
