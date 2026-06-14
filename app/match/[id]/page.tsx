@@ -192,6 +192,7 @@ export default async function MatchDetailPage({
           awayScore={awayScore}
           homePen={row.home_pen}
           awayPen={row.away_pen}
+          round={row.round}
         />
         {detailState === "upcoming" ? (
           <PredictRegion

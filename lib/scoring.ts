@@ -12,6 +12,32 @@ const MULTIPLIERS: Record<string, number> = {
   final: 15,
 };
 
+const ROUND_LABELS: Record<string, string> = {
+  group: "Fase de grupos",
+  R32: "Dieciseisavos",
+  R16: "Octavos",
+  QF: "Cuartos",
+  SF: "Semifinal",
+  "3rd": "Tercer puesto",
+  final: "Final",
+};
+
+export function getMatchMultiplier(args: {
+  round: string;
+  homeTeam: string | null;
+  awayTeam: string | null;
+}) {
+  const { round, homeTeam, awayTeam } = args;
+  const hasSpain = homeTeam === "Spain" || awayTeam === "Spain";
+  const multiplier = (MULTIPLIERS[round] ?? 1) * (hasSpain ? 2 : 1);
+
+  return {
+    multiplier,
+    roundLabel: ROUND_LABELS[round] ?? round,
+    hasSpain,
+  };
+}
+
 export function computePoints(args: {
   round: string;
   homeScore: number | null;
@@ -59,8 +85,7 @@ export function computePoints(args: {
     if (predPenWinner !== null && predPenWinner === penWinner) penBonus = 2;
   }
 
-  let multiplier = MULTIPLIERS[round] ?? 1;
-  if (homeTeam === "Spain" || awayTeam === "Spain") multiplier *= 2;
+  const { multiplier } = getMatchMultiplier({ round, homeTeam, awayTeam });
 
   return (base + penBonus) * multiplier;
 }
