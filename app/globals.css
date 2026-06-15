@@ -470,9 +470,9 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .pressure__txt strong { color: var(--ink); font-weight: 700; }
 .pressure--missing .pressure__txt strong { color: var(--red); }
 .compact__status .pressure {
-  width: 110px;
-  min-width: 110px;
-  max-width: 110px;
+  width: 125px;
+  min-width: 125px;
+  max-width: 125px;
 }
 .compact__status .pressure__txt { font-size: 10.5px; }
 
