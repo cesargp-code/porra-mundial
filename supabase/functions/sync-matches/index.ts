@@ -244,6 +244,8 @@ async function syncMatches() {
     away_score: m.away_score,
     home_pen: m.home_pen,
     away_pen: m.away_pen,
+    phase: typeof m.phase === "string" ? m.phase : null,
+    match_minute: typeof m.match_minute === "number" ? m.match_minute : null,
     status: m.status,
     synced_at,
   }));

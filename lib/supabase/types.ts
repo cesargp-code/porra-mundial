@@ -16,6 +16,8 @@ export type DbMatch = {
   away_score: number | null;
   home_pen: number | null;
   away_pen: number | null;
+  phase: string | null;
+  match_minute: number | null;
   status: MatchStatus;
   synced_at: string;
   is_test: boolean;

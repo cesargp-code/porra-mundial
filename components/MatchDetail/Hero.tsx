@@ -12,6 +12,7 @@ type Props = {
   awayScore: number | null;
   homePen?: number | null;
   awayPen?: number | null;
+  matchMinute?: number | null;
 };
 
 export function Hero({
@@ -25,6 +26,7 @@ export function Hero({
   awayScore,
   homePen,
   awayPen,
+  matchMinute,
 }: Props) {
   const showScore =
     (state === "finished" || state === "live") && homeScore !== null && awayScore !== null;
@@ -85,7 +87,7 @@ export function Hero({
           {state === "live" && (
             <span className="pill pill--live">
               <span className="pill__dot" />
-              En juego
+              En juego{matchMinute != null ? ` min:${matchMinute}` : ""}
             </span>
           )}
         </div>
