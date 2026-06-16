@@ -1,3 +1,3 @@
 alter table public.matches
-  add column phase text,
-  add column match_minute int;
+  add column if not exists phase text,
+  add column if not exists match_minute int;
