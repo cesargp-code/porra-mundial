@@ -12,8 +12,31 @@ type Props = {
   awayScore: number | null;
   homePen?: number | null;
   awayPen?: number | null;
+  phase?: string | null;
   matchMinute?: number | null;
 };
+
+function liveStatusLabel(phase: string | null | undefined, matchMinute: number | null | undefined) {
+  if (matchMinute != null) return `En juego min:${matchMinute}`;
+
+  switch (phase) {
+    case "1H":
+      return "En juego, 1ª parte";
+    case "HT":
+      return "Descanso";
+    case "2H":
+      return "En juego, 2ª parte";
+    case "ET1":
+    case "ET2":
+      return "Prórroga";
+    case "PEN":
+      return "Penaltis";
+    case "FT_PEN":
+      return "Terminado";
+    default:
+      return "En juego";
+  }
+}
 
 export function Hero({
   matchId,
@@ -26,6 +49,7 @@ export function Hero({
   awayScore,
   homePen,
   awayPen,
+  phase,
   matchMinute,
 }: Props) {
   const showScore =
@@ -87,7 +111,7 @@ export function Hero({
           {state === "live" && (
             <span className="pill pill--live">
               <span className="pill__dot" />
-              En juego{matchMinute != null ? ` min:${matchMinute}` : ""}
+              {liveStatusLabel(phase, matchMinute)}
             </span>
           )}
         </div>

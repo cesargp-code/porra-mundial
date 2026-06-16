@@ -212,6 +212,7 @@ export default async function MatchDetailPage({
           awayScore={awayScore}
           homePen={row.home_pen}
           awayPen={row.away_pen}
+          phase={row.phase}
           matchMinute={row.match_minute}
         />
         {detailState === "upcoming" ? (
