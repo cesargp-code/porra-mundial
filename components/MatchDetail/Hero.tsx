@@ -1,5 +1,7 @@
 import { Flag, teamLabel } from "../flags/index";
+import { MatchStatsSheet } from "./MatchStatsSheet";
 import type { DetailState } from "./types";
+import type { DbMatchStats } from "@/lib/supabase/types";
 
 type Props = {
   matchId: string;
@@ -14,6 +16,7 @@ type Props = {
   awayPen?: number | null;
   phase?: string | null;
   matchMinute?: number | null;
+  matchStats?: DbMatchStats | null;
 };
 
 function liveStatusLabel(phase: string | null | undefined, matchMinute: number | null | undefined) {
@@ -51,6 +54,7 @@ export function Hero({
   awayPen,
   phase,
   matchMinute,
+  matchStats,
 }: Props) {
   const showScore =
     (state === "finished" || state === "live") && homeScore !== null && awayScore !== null;
@@ -107,7 +111,16 @@ export function Hero({
 
       {state !== "upcoming" && (
         <div className="hero__status">
-          {state === "finished" && <span className="pill pill--finished">Terminado</span>}
+          {state === "finished" &&
+            (matchStats ? (
+              <MatchStatsSheet
+                matchStats={matchStats}
+                homeCode={homeCode}
+                awayCode={awayCode}
+              />
+            ) : (
+              <span className="pill pill--finished">Terminado</span>
+            ))}
           {state === "live" && (
             <span className="pill pill--live">
               <span className="pill__dot" />

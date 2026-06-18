@@ -34,6 +34,8 @@ const STALE_UNRESOLVED_POLL_MIN = 60;
 const TOURNAMENT_MARGIN_MIN = 7 * 24 * 60;
 const GROUP_DURATION_MIN = 135; // 90 + half-time + stoppage/delay margin
 const KO_DURATION_MIN = 180; // regulation + ET + penalties + delay margin
+const STATS_FETCH_LIMIT = 4;
+const STATS_RETRY_MIN = 30;
 
 type MatchRow = {
   kickoff_utc: string;
@@ -260,7 +262,122 @@ async function syncMatches() {
     await markAttempt();
     throw error;
   }
-  return { synced: filteredRows.length, skipped_test: testIds.size };
+
+  const statsResult = await syncCompletedMatchStats(filteredRows);
+  return {
+    synced: filteredRows.length,
+    skipped_test: testIds.size,
+    ...statsResult,
+  };
+}
+
+type MatchStatsRow = {
+  match_id: string;
+  stats: Record<string, unknown> | null;
+  last_attempted_at: string | null;
+  last_error: string | null;
+};
+
+function shouldFetchStats(row: MatchStatsRow | undefined, now: Date) {
+  if (!row) return true;
+  if (row.stats) return false;
+  if (!row.last_attempted_at) return true;
+  const minSinceAttempt = minutesBetween(now, new Date(row.last_attempted_at));
+  return !!row.last_error && minSinceAttempt >= STATS_RETRY_MIN;
+}
+
+async function recordStatsAttempt(matchId: string, lastError: string) {
+  const attemptedAt = new Date().toISOString();
+  const { error } = await sb.from("match_stats").upsert({
+    match_id: matchId,
+    last_attempted_at: attemptedAt,
+    last_error: lastError,
+    synced_at: attemptedAt,
+  });
+  if (error) console.error(`Failed to record stats attempt for ${matchId}:`, error);
+}
+
+async function syncCompletedMatchStats(rows: Array<{ id: string; status: unknown }>) {
+  const completedIds = rows
+    .filter((row) => row.status === "completed")
+    .map((row) => row.id);
+  if (completedIds.length === 0) {
+    return { stats_synced: 0, stats_failed: 0, stats_skipped: 0 };
+  }
+
+  const { data: existingRows, error } = await sb
+    .from("match_stats")
+    .select("match_id, stats, last_attempted_at, last_error")
+    .in("match_id", completedIds);
+  if (error) {
+    console.error("Failed to load existing match stats:", error);
+    return { stats_synced: 0, stats_failed: 0, stats_skipped: completedIds.length };
+  }
+
+  const now = new Date();
+  const existing = new Map(
+    ((existingRows ?? []) as MatchStatsRow[]).map((row) => [row.match_id, row])
+  );
+  const queuedIds = completedIds
+    .filter((id) => shouldFetchStats(existing.get(id), now))
+    .slice(0, STATS_FETCH_LIMIT);
+
+  let statsSynced = 0;
+  let statsFailed = 0;
+
+  for (const matchId of queuedIds) {
+    const attemptedAt = new Date().toISOString();
+    try {
+      const res = await fetch(`${API_URL}/matches/${matchId}/stats`, {
+        headers: { Authorization: `Bearer ${API_KEY}` },
+      });
+      if (!res.ok) {
+        statsFailed += 1;
+        await recordStatsAttempt(matchId, `API ${res.status}: ${await res.text()}`);
+        continue;
+      }
+
+      const payload = (await res.json()) as Record<string, unknown>;
+      const stats = payload.stats;
+      const timeline = payload.timeline;
+      if (
+        !stats ||
+        typeof stats !== "object" ||
+        Array.isArray(stats) ||
+        !Array.isArray(timeline)
+      ) {
+        statsFailed += 1;
+        await recordStatsAttempt(matchId, "Invalid stats payload");
+        continue;
+      }
+
+      const { error: upsertError } = await sb.from("match_stats").upsert({
+        match_id: matchId,
+        stats,
+        timeline,
+        source_fetched_at:
+          typeof payload.fetched_at === "string" ? payload.fetched_at : null,
+        last_attempted_at: attemptedAt,
+        last_error: null,
+        synced_at: attemptedAt,
+      });
+      if (upsertError) {
+        statsFailed += 1;
+        console.error(`Failed to upsert stats for ${matchId}:`, upsertError);
+        continue;
+      }
+      statsSynced += 1;
+    } catch (err) {
+      statsFailed += 1;
+      await recordStatsAttempt(matchId, String(err));
+    }
+  }
+
+  return {
+    stats_synced: statsSynced,
+    stats_failed: statsFailed,
+    stats_skipped: completedIds.length - queuedIds.length,
+  };
 }
 
 Deno.serve(async (req) => {

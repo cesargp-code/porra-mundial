@@ -42,6 +42,16 @@ export type DbPrediction = {
   updated_at: string;
 };
 
+export type DbMatchStats = {
+  match_id: string;
+  stats: Record<string, unknown> | null;
+  timeline: unknown[] | null;
+  source_fetched_at: string | null;
+  last_attempted_at: string | null;
+  last_error: string | null;
+  synced_at: string;
+};
+
 export type DbGroup = {
   id: number;
   name: string;

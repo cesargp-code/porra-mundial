@@ -18,6 +18,7 @@ import { computePoints, getMatchMultiplier } from "@/lib/scoring";
 import {
   getCurrentUserId,
   getMatchById,
+  getMatchStats,
   getMyPredictionForMatch,
   getPredictionsForMatch,
   getPredictorIdsForMatch,
@@ -47,10 +48,11 @@ export default async function MatchDetailPage({
 }) {
   const [{ id }, { state: stateParam }] = await Promise.all([params, searchParams]);
 
-  const [row, currentUserId, profiles] = await Promise.all([
+  const [row, currentUserId, profiles, statsRow] = await Promise.all([
     getMatchById(id),
     getCurrentUserId(),
     getProfiles(),
+    getMatchStats(id),
   ]);
   if (!row) notFound();
   if (!currentUserId) redirect("/login");
@@ -180,6 +182,8 @@ export default async function MatchDetailPage({
   const multiplierLabel = `${multiplierDetails.roundLabel}${
     multiplierDetails.hasSpain ? " + España" : ""
   }`;
+  const matchStats =
+    detailState === "finished" && statsRow?.stats ? statsRow : null;
 
   return (
     <div className="screen" data-screen-label={`Detail · ${detailState}`}>
@@ -214,6 +218,7 @@ export default async function MatchDetailPage({
           awayPen={row.away_pen}
           phase={row.phase}
           matchMinute={row.match_minute}
+          matchStats={matchStats}
         />
         {detailState === "upcoming" ? (
           <PredictRegion

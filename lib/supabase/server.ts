@@ -2,7 +2,13 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import { createAdminClient } from "./admin";
-import type { DbGroupStanding, DbMatch, DbPrediction, DbProfile } from "./types";
+import type {
+  DbGroupStanding,
+  DbMatch,
+  DbMatchStats,
+  DbPrediction,
+  DbProfile,
+} from "./types";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -64,6 +70,18 @@ export async function getMatchById(id: string): Promise<DbMatch | null> {
 
   if (error) throw new Error(`Failed to load match ${id}: ${error.message}`);
   return (data as DbMatch | null) ?? null;
+}
+
+export async function getMatchStats(matchId: string): Promise<DbMatchStats | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("match_stats")
+    .select("*")
+    .eq("match_id", matchId)
+    .maybeSingle();
+
+  if (error) throw new Error(`Failed to load match stats ${matchId}: ${error.message}`);
+  return (data as DbMatchStats | null) ?? null;
 }
 
 export async function getProfiles(): Promise<DbProfile[]> {
