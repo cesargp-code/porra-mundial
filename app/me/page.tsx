@@ -76,6 +76,7 @@ export default async function MePage() {
       m.away_team &&
       !myPredictionByMatchId.has(m.id)
   ).length;
+  const finishedMatches = matches.filter((m) => m.status === "completed").length;
 
   const completedPredictionStats = getCompletedPredictionStats(matches, myPredictions);
   const completedPredictionStatsByUser = getCompletedPredictionStatsByUser(
@@ -162,7 +163,9 @@ export default async function MePage() {
             </section>
 
             <section className="stat-section">
-              <h2 className="stat-section__title">Predicción de partidos</h2>
+              <h2 className="stat-section__title">
+                Predicción de partidos ({finishedMatches} jugados)
+              </h2>
               <div className="hero hero--leaderboard">
                 <div className="players--embedded">
                   <div className="player">
