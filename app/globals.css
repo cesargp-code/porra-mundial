@@ -1625,7 +1625,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   padding: 0 10px;
   border-radius: 999px;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -1668,9 +1668,9 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .match-stats-sheet__event {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-height: 52px;
 }
 .match-stats-sheet__event-side {
@@ -1705,13 +1705,11 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .match-stats-sheet__event-card {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   max-width: 100%;
-  padding: 10px 12px;
+  padding: 10px 0;
   background: var(--card);
-  border: 1px solid var(--line-2);
-  border-radius: 12px;
 }
 .match-stats-sheet__event--away .match-stats-sheet__event-card,
 .match-stats-sheet__event--unknown .match-stats-sheet__event-card {
