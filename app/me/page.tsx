@@ -8,6 +8,7 @@ import { SyncMatchesButton } from "@/components/SyncMatchesButton";
 import { isMatchActive } from "@/lib/matchState";
 import {
   getCompletedPredictionStats,
+  getCompletedPredictionStatsByUser,
   getPredictionStats,
 } from "@/lib/predictionStats";
 import { rankPlayers } from "@/lib/ranking";
@@ -77,6 +78,17 @@ export default async function MePage() {
   ).length;
 
   const completedPredictionStats = getCompletedPredictionStats(matches, myPredictions);
+  const completedPredictionStatsByUser = getCompletedPredictionStatsByUser(
+    matches,
+    [...myPredictions, ...otherPredictions]
+  );
+  const rankedWithStats = ranked.map((player) => ({
+    ...player,
+    stats: completedPredictionStatsByUser.get(player.id) ?? {
+      correctResults: 0,
+      exactScores: 0,
+    },
+  }));
 
   const userStats = getPredictionStats(myPredictions);
   const crowdStats = getPredictionStats(otherPredictions);
@@ -103,7 +115,7 @@ export default async function MePage() {
                     Bote acumulado {potFmt.format(prizePot)}
                   </span>
                 </div>
-                {ranked.map((p) => (
+                {rankedWithStats.map((p) => (
                   <div
                     key={p.id}
                     className={`player player--rank${p.id === userId ? " player--you" : ""}`}
@@ -112,7 +124,11 @@ export default async function MePage() {
                     <div className="player__name">{p.name}</div>
                     <div
                       className={`player__points ${p.points > 0 ? "player__points--win" : "player__points--zero"}`}
+                      aria-label={`${p.stats.exactScores} resultados exactos, ${p.stats.correctResults} signos acertados, ${p.points} puntos`}
                     >
+                      <span className="player__accuracy">
+                        ({p.stats.exactScores}/{p.stats.correctResults})
+                      </span>
                       <strong>{p.points}</strong>
                       <span className="player__points-lbl">pts</span>
                     </div>

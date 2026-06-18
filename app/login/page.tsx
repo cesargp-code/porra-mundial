@@ -5,6 +5,8 @@ export const metadata = {
 };
 
 export default function LoginPage() {
+  const showDevLogin = process.env.NODE_ENV !== "production";
+
   return (
     <div className="auth-screen">
       <div className="auth-hero">
@@ -13,6 +15,13 @@ export default function LoginPage() {
         <p className="auth-subtitle">Liga privada entre amigos · Mundial 2026</p>
       </div>
       <LoginForm />
+      {showDevLogin && (
+        <div className="dev-login">
+          <a href="/auth/dev-login" className="auth-button dev-login__button">
+            Entrar como César
+          </a>
+        </div>
+      )}
     </div>
   );
 }

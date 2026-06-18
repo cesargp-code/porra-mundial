@@ -4,6 +4,7 @@
   --ink: #0E0E0E;
   --ink-2: #4A4A47;
   --ink-3: #8B8B85;
+  --ink-4: #B7B7B0;
   --line: #E2E2DE;
   --line-2: #EFEFEC;
   --lime: #D8F24A;
@@ -960,6 +961,11 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   font-weight: 700;
   color: var(--ink);
 }
+.player__accuracy {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink-4);
+}
 .player__points--win strong { color: var(--green); }
 .player__points--zero strong { color: var(--ink-3); }
 .player__points--prov strong { color: var(--amber); }
@@ -1147,6 +1153,18 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   cursor: pointer;
 }
 .auth-link:hover { color: var(--ink-2); }
+.dev-login {
+  width: 100%;
+  display: flex;
+}
+.dev-login__button {
+  width: 100%;
+  margin-top: 10px;
+  background: var(--ink-2);
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
 
 /* ===== Predict CTA + bottom sheet ===== */
 .predict-btn {
