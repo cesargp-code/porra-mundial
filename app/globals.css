@@ -1625,7 +1625,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   padding: 0 10px;
   border-radius: 999px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 800;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
