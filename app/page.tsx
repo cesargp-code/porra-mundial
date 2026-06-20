@@ -64,7 +64,7 @@ export default async function MatchListPage({
   const groups = groupByDay(matches);
   const todayKey = dayKey(new Date());
   const entryDayKey =
-    view === "groups" ? undefined : groups.find((group) => group.key >= todayKey)?.key;
+    view === undefined ? groups.find((group) => group.key >= todayKey)?.key : undefined;
   const tournamentGroups = groupByTournamentGroup(matches);
   const standingsByGroup = new Map<string, typeof groupStandings>();
   for (const standing of groupStandings) {
