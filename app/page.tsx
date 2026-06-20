@@ -8,6 +8,7 @@ import { MatchListScrollRestoration } from "@/components/MatchListScrollRestorat
 import { MatchAutoRefresh } from "@/components/MatchAutoRefresh";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
 import { calculateGroupStandings } from "@/lib/groupStandings";
+import { dayKey } from "@/lib/format";
 import {
   groupByDay,
   groupByTournamentGroup,
@@ -61,6 +62,9 @@ export default async function MatchListPage({
   const matches = rows.map((r) => toUiMatch(r, ctx));
   const nextKickoff = matches.find((match) => match.kickoff.getTime() > Date.now())?.kickoff;
   const groups = groupByDay(matches);
+  const todayKey = dayKey(new Date());
+  const entryDayKey =
+    view === "groups" ? undefined : groups.find((group) => group.key >= todayKey)?.key;
   const tournamentGroups = groupByTournamentGroup(matches);
   const standingsByGroup = new Map<string, typeof groupStandings>();
   for (const standing of groupStandings) {
@@ -75,7 +79,7 @@ export default async function MatchListPage({
 
   return (
     <div className="screen" data-screen-label="01 Match List">
-      <MatchListScrollRestoration />
+      <MatchListScrollRestoration targetDayKey={entryDayKey} />
       <MatchAutoRefresh kickoff={nextKickoff?.toISOString()} />
       <SegmentedTabs
         ariaLabel="Vista de partidos"
@@ -120,7 +124,7 @@ export default async function MatchListPage({
         leftContent={
           <>
             {groups.map((g) => (
-              <section key={g.key} className="day-group">
+              <section key={g.key} className="day-group" data-day-key={g.key}>
                 <DayHeader label={g.label} count={g.items.length} />
                 <div className="list">
                   {g.items.map((m) => (

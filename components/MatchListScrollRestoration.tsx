@@ -16,11 +16,12 @@ function readReturnState(): MatchListReturnState | null {
   }
 }
 
-export function MatchListScrollRestoration() {
+export function MatchListScrollRestoration({ targetDayKey }: { targetDayKey?: string }) {
   useLayoutEffect(() => {
     const state = readReturnState();
     const currentUrl = `${window.location.pathname}${window.location.search}`;
-    if (!state || state.listUrl !== currentUrl) return;
+    const shouldRestoreReturn = state?.listUrl === currentUrl;
+    if (!shouldRestoreReturn && !targetDayKey) return;
 
     const previousRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";
@@ -28,24 +29,40 @@ export function MatchListScrollRestoration() {
     let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
       secondFrame = window.requestAnimationFrame(() => {
-        const cards = document.querySelectorAll<HTMLElement>("[data-match-id]");
-        const card = Array.from(cards).find(
-          (candidate) =>
-            candidate.dataset.matchId === state.matchId &&
-            candidate.getClientRects().length > 0,
-        );
+        if (shouldRestoreReturn && state) {
+          const cards = document.querySelectorAll<HTMLElement>("[data-match-id]");
+          const card = Array.from(cards).find(
+            (candidate) =>
+              candidate.dataset.matchId === state.matchId &&
+              candidate.getClientRects().length > 0,
+          );
 
-        if (card) {
-          const top = window.scrollY + card.getBoundingClientRect().top - state.viewportTop;
-          window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
-        } else {
-          window.scrollTo({ top: state.scrollY, behavior: "instant" });
+          if (card) {
+            const top = window.scrollY + card.getBoundingClientRect().top - state.viewportTop;
+            window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
+          } else {
+            window.scrollTo({ top: state.scrollY, behavior: "instant" });
+          }
+
+          try {
+            sessionStorage.removeItem(MATCH_LIST_RETURN_KEY);
+          } catch {
+            // A stale value is harmless if storage becomes unavailable.
+          }
+
+          return;
         }
 
-        try {
-          sessionStorage.removeItem(MATCH_LIST_RETURN_KEY);
-        } catch {
-          // A stale value is harmless if storage becomes unavailable.
+        const day = document.querySelector<HTMLElement>(
+          `[data-day-key="${targetDayKey}"]`,
+        );
+        if (day) {
+          const appbar = document.querySelector<HTMLElement>(".appbar");
+          const appbarBottom = appbar?.getBoundingClientRect().bottom ?? 0;
+          window.scrollTo({
+            top: Math.max(0, window.scrollY + day.getBoundingClientRect().top - appbarBottom),
+            behavior: "instant",
+          });
         }
       });
     });
@@ -55,7 +72,7 @@ export function MatchListScrollRestoration() {
       window.cancelAnimationFrame(secondFrame);
       window.history.scrollRestoration = previousRestoration;
     };
-  }, []);
+  }, [targetDayKey]);
 
   return null;
 }
