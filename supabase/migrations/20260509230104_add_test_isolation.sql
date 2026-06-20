@@ -1,4 +1,4 @@
--- Admin flag on profiles (manually granted to one user below)
+-- Admin flag on profiles (grant admins manually in Supabase)
 alter table public.profiles
   add column if not exists is_admin boolean not null default false;
 
@@ -26,8 +26,3 @@ create table if not exists public.matches_test_snapshots (
 
 alter table public.matches_test_snapshots enable row level security;
 -- No RLS policies: only callable through SECURITY DEFINER RPCs.
-
--- Grant admin to the project owner. Idempotent.
-update public.profiles
-   set is_admin = true
- where id = (select id from auth.users where email = 'cesargp@gmail.com');;

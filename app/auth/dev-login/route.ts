@@ -2,18 +2,24 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const DEV_LOGIN_EMAIL = "cesargp@gmail.com";
-
 export async function GET(request: NextRequest) {
   if (process.env.NODE_ENV === "production") {
     return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
+  }
+
+  const devLoginEmail = process.env.DEV_LOGIN_EMAIL;
+  if (!devLoginEmail) {
+    return NextResponse.json(
+      { error: "DEV_LOGIN_EMAIL is not configured" },
+      { status: 404 }
+    );
   }
 
   const origin = request.nextUrl.origin;
   const supabase = createAdminClient();
   const { data, error } = await supabase.auth.admin.generateLink({
     type: "magiclink",
-    email: DEV_LOGIN_EMAIL,
+    email: devLoginEmail,
     options: {
       redirectTo: `${origin}/auth/callback`,
     },
