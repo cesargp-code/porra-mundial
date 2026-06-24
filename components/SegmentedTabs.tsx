@@ -72,6 +72,7 @@ export function SegmentedTabs({
 
   const updateLeftLocatorLabel = useCallback(() => {
     if (active !== "left") {
+      setShowLeftLocatorLabel(false);
       return;
     }
 
@@ -154,17 +155,30 @@ export function SegmentedTabs({
   const trackClassName = preserveSticky
     ? `rtabs__track rtabs__track--static rtabs__track--${active}`
     : `rtabs__track rtabs__track--${active}`;
+  const leftDisplayLabel = showLeftLocatorLabel ? leftLocatorLabel : leftLabel;
   const control = (
     <div className="seg" role="tablist" aria-label={ariaLabel}>
       <span className={`seg__thumb seg__thumb--${active}`} aria-hidden="true" />
       <button
         type="button"
         role="tab"
+        aria-label={leftDisplayLabel}
         aria-selected={active === "left"}
         className={`seg__btn ${active === "left" ? "seg__btn--active" : ""}`}
         onClick={handleLeftClick}
       >
-        {showLeftLocatorLabel ? leftLocatorLabel : leftLabel}
+        <span
+          className={`seg__label ${showLeftLocatorLabel ? "" : "seg__label--visible"}`}
+          aria-hidden="true"
+        >
+          {leftLabel}
+        </span>
+        <span
+          className={`seg__label ${showLeftLocatorLabel ? "seg__label--visible" : ""}`}
+          aria-hidden="true"
+        >
+          {leftLocatorLabel}
+        </span>
       </button>
       <button
         type="button"

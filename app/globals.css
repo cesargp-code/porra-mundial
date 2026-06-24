@@ -709,6 +709,8 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .seg__btn {
   position: relative;
   z-index: 1;
+  display: grid;
+  place-items: center;
   background: transparent;
   border: none;
   padding: 11px 14px;
@@ -722,6 +724,18 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
   -webkit-tap-highlight-color: transparent;
 }
 .seg__btn--active { color: var(--ink); font-weight: 700; }
+.seg__label {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(3px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.seg__label--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 .rtabs__viewport {
   overflow: hidden;
