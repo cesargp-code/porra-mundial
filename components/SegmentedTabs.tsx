@@ -11,6 +11,7 @@ import {
 } from "react";
 
 type TabSide = "left" | "right";
+const LOCATOR_SCROLL_MS = 240;
 
 type Props = {
   ariaLabel: string;
@@ -104,10 +105,19 @@ export function SegmentedTabs({
 
     const appbar = document.querySelector<HTMLElement>(".appbar");
     const appbarBottom = appbar?.getBoundingClientRect().bottom ?? 0;
-    window.scrollTo({
-      top: Math.max(0, window.scrollY + day.getBoundingClientRect().top - appbarBottom),
-      behavior: "instant",
-    });
+    const startY = window.scrollY;
+    const targetY = Math.max(0, startY + day.getBoundingClientRect().top - appbarBottom);
+    const distance = targetY - startY;
+    const startedAt = window.performance.now();
+
+    function step(now: number) {
+      const progress = Math.min(1, (now - startedAt) / LOCATOR_SCROLL_MS);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      window.scrollTo({ top: startY + distance * eased, behavior: "instant" });
+      if (progress < 1) window.requestAnimationFrame(step);
+    }
+
+    window.requestAnimationFrame(step);
     setShowLeftLocatorLabel(false);
   }
 
