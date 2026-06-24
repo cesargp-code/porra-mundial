@@ -49,6 +49,10 @@ export function SegmentedTabs({
   const searchParams = useSearchParams();
   const [active, setActive] = useState<TabSide>(defaultTab);
   const [showLeftLocatorLabel, setShowLeftLocatorLabel] = useState(false);
+  const locatorScrollRef = useRef({
+    active: false,
+    frame: 0,
+  });
   const swipeRef = useRef({
     pointerId: -1,
     startX: 0,
@@ -72,6 +76,8 @@ export function SegmentedTabs({
   }, [leftLocatorDayKey]);
 
   const updateLeftLocatorLabel = useCallback(() => {
+    if (locatorScrollRef.current.active) return;
+
     if (active !== "left") {
       setShowLeftLocatorLabel(false);
       return;
@@ -96,6 +102,7 @@ export function SegmentedTabs({
     return () => {
       window.removeEventListener("scroll", updateLeftLocatorLabel);
       window.removeEventListener("resize", updateLeftLocatorLabel);
+      window.cancelAnimationFrame(locatorScrollRef.current.frame);
     };
   }, [updateLeftLocatorLabel]);
 
@@ -109,15 +116,23 @@ export function SegmentedTabs({
     const targetY = Math.max(0, startY + day.getBoundingClientRect().top - appbarBottom);
     const distance = targetY - startY;
     const startedAt = window.performance.now();
+    locatorScrollRef.current.active = true;
 
     function step(now: number) {
       const progress = Math.min(1, (now - startedAt) / LOCATOR_SCROLL_MS);
       const eased = 1 - Math.pow(1 - progress, 3);
       window.scrollTo({ top: startY + distance * eased, behavior: "instant" });
-      if (progress < 1) window.requestAnimationFrame(step);
+      if (progress < 1) {
+        locatorScrollRef.current.frame = window.requestAnimationFrame(step);
+        return;
+      }
+
+      locatorScrollRef.current.active = false;
+      setShowLeftLocatorLabel(false);
     }
 
-    window.requestAnimationFrame(step);
+    window.cancelAnimationFrame(locatorScrollRef.current.frame);
+    locatorScrollRef.current.frame = window.requestAnimationFrame(step);
     setShowLeftLocatorLabel(false);
   }
 
