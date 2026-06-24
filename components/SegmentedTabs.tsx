@@ -1,7 +1,14 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState, type PointerEvent, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 
 type TabSide = "left" | "right";
 
@@ -17,6 +24,8 @@ type Props = {
   queryParam?: string;
   leftQueryValue?: string;
   rightQueryValue?: string;
+  leftLocatorDayKey?: string;
+  leftLocatorLabel?: string;
 };
 
 export function SegmentedTabs({
@@ -31,11 +40,14 @@ export function SegmentedTabs({
   queryParam,
   leftQueryValue = "left",
   rightQueryValue = "right",
+  leftLocatorDayKey,
+  leftLocatorLabel = "Hoy",
 }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [active, setActive] = useState<TabSide>(defaultTab);
+  const [showLeftLocatorLabel, setShowLeftLocatorLabel] = useState(false);
   const swipeRef = useRef({
     pointerId: -1,
     startX: 0,
@@ -51,6 +63,60 @@ export function SegmentedTabs({
     params.set(queryParam, next === "left" ? leftQueryValue : rightQueryValue);
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }
+
+  const getLocatorDay = useCallback(() => {
+    if (!leftLocatorDayKey) return null;
+    return document.querySelector<HTMLElement>(`[data-day-key="${leftLocatorDayKey}"]`);
+  }, [leftLocatorDayKey]);
+
+  const updateLeftLocatorLabel = useCallback(() => {
+    if (active !== "left") {
+      return;
+    }
+
+    const day = getLocatorDay();
+    if (!day) {
+      setShowLeftLocatorLabel(false);
+      return;
+    }
+
+    const appbar = document.querySelector<HTMLElement>(".appbar");
+    const appbarBottom = appbar?.getBoundingClientRect().bottom ?? 0;
+    setShowLeftLocatorLabel(Math.abs(day.getBoundingClientRect().top - appbarBottom) > 24);
+  }, [active, getLocatorDay]);
+
+  useEffect(() => {
+    updateLeftLocatorLabel();
+    window.addEventListener("scroll", updateLeftLocatorLabel, { passive: true });
+    window.addEventListener("resize", updateLeftLocatorLabel);
+
+    return () => {
+      window.removeEventListener("scroll", updateLeftLocatorLabel);
+      window.removeEventListener("resize", updateLeftLocatorLabel);
+    };
+  }, [updateLeftLocatorLabel]);
+
+  function scrollToLeftLocator() {
+    const day = getLocatorDay();
+    if (!day) return;
+
+    const appbar = document.querySelector<HTMLElement>(".appbar");
+    const appbarBottom = appbar?.getBoundingClientRect().bottom ?? 0;
+    window.scrollTo({
+      top: Math.max(0, window.scrollY + day.getBoundingClientRect().top - appbarBottom),
+      behavior: "instant",
+    });
+    setShowLeftLocatorLabel(false);
+  }
+
+  function handleLeftClick() {
+    if (active === "left" && showLeftLocatorLabel) {
+      scrollToLeftLocator();
+      return;
+    }
+
+    selectTab("left");
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -96,9 +162,9 @@ export function SegmentedTabs({
         role="tab"
         aria-selected={active === "left"}
         className={`seg__btn ${active === "left" ? "seg__btn--active" : ""}`}
-        onClick={() => selectTab("left")}
+        onClick={handleLeftClick}
       >
-        {leftLabel}
+        {showLeftLocatorLabel ? leftLocatorLabel : leftLabel}
       </button>
       <button
         type="button"

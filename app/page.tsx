@@ -63,8 +63,9 @@ export default async function MatchListPage({
   const nextKickoff = matches.find((match) => match.kickoff.getTime() > Date.now())?.kickoff;
   const groups = groupByDay(matches);
   const todayKey = dayKey(new Date());
+  const locatorDayKey = groups.find((group) => group.key >= todayKey)?.key;
   const entryDayKey =
-    view === undefined ? groups.find((group) => group.key >= todayKey)?.key : undefined;
+    view === undefined ? locatorDayKey : undefined;
   const tournamentGroups = groupByTournamentGroup(matches);
   const standingsByGroup = new Map<string, typeof groupStandings>();
   for (const standing of groupStandings) {
@@ -89,6 +90,7 @@ export default async function MatchListPage({
         queryParam="view"
         leftQueryValue="date"
         rightQueryValue="groups"
+        leftLocatorDayKey={locatorDayKey}
         headerContent={
           <div className="appbar__row">
             <div className="appbar__title">
