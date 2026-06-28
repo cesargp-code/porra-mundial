@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 
-import { teamLabel } from "@/components/flags/index";
 import { MatchAutoRefresh } from "@/components/MatchAutoRefresh";
 import { DetailTopbar } from "@/components/MatchDetail/DetailTopbar";
 import { Hero } from "@/components/MatchDetail/Hero";
@@ -114,7 +113,7 @@ export default async function MatchDetailPage({
           : penWinner === row.away_team
             ? row.away_team_code
             : null;
-      return teamLabel(code, penWinner);
+      return code ?? penWinner;
     };
     scoredPlays = Object.fromEntries(
       predictions.map((p) => {
