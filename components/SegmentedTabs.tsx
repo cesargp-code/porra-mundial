@@ -8,6 +8,7 @@ import {
   useState,
   type PointerEvent,
   type ReactNode,
+  type TouchEvent,
 } from "react";
 
 type TabSide = "left" | "right";
@@ -61,6 +62,21 @@ export function SegmentedTabs({
     boundaryScrollLeft: 0,
     startedInBoundary: false,
   });
+
+  function resolveSwipe(dx: number, dy: number) {
+    if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.4) return false;
+
+    const swipe = swipeRef.current;
+    if (swipe.startedInBoundary && active === "right") {
+      const canReturnToLeftTab = swipe.boundaryScrollLeft <= 2 && dx > 0;
+      if (!canReturnToLeftTab) return true;
+    }
+
+    if (active === "left") selectTab("right");
+    if (dx > 0 && active === "right") selectTab("left");
+
+    return true;
+  }
 
   function selectTab(next: TabSide) {
     setActive(next);
@@ -170,24 +186,46 @@ export function SegmentedTabs({
     const dx = event.clientX - swipe.startX;
     const dy = event.clientY - swipe.startY;
 
-    if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
-
-    if (swipe.startedInBoundary && active === "right") {
-      const canReturnToLeftTab = swipe.boundaryScrollLeft <= 2 && dx > 0;
-      if (!canReturnToLeftTab) {
-        swipeRef.current.tracking = false;
-        return;
-      }
-    }
-
-    if (active === "left") selectTab("right");
-    if (dx > 0 && active === "right") selectTab("left");
+    if (!resolveSwipe(dx, dy)) return;
 
     swipeRef.current.tracking = false;
   }
 
   function handlePointerEnd(event: PointerEvent<HTMLDivElement>) {
     if (swipeRef.current.pointerId !== event.pointerId) return;
+    swipeRef.current.tracking = false;
+  }
+
+  function handleTouchStart(event: TouchEvent<HTMLDivElement>) {
+    const touch = event.touches[0];
+    if (!touch) return;
+    const boundary = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-tab-swipe-boundary]",
+    );
+
+    swipeRef.current = {
+      pointerId: -1,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      tracking: true,
+      boundaryScrollLeft: boundary?.scrollLeft ?? 0,
+      startedInBoundary: Boolean(boundary),
+    };
+  }
+
+  function handleTouchMove(event: TouchEvent<HTMLDivElement>) {
+    const touch = event.touches[0];
+    const swipe = swipeRef.current;
+    if (!touch || !swipe.tracking) return;
+
+    const dx = touch.clientX - swipe.startX;
+    const dy = touch.clientY - swipe.startY;
+    if (!resolveSwipe(dx, dy)) return;
+
+    swipeRef.current.tracking = false;
+  }
+
+  function handleTouchEnd() {
     swipeRef.current.tracking = false;
   }
 
@@ -249,6 +287,10 @@ export function SegmentedTabs({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerEnd}
         onPointerCancel={handlePointerEnd}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
       >
         <div className={trackClassName}>
           <section
