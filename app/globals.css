@@ -762,6 +762,7 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 }
 .rtabs--preserve-sticky .rtabs__viewport {
   overflow: visible;
+  touch-action: auto;
 }
 .rtabs--preserve-sticky .rtabs__track {
   display: block;
@@ -776,6 +777,99 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 .rtabs--preserve-sticky .rtabs__track--left .rtabs__page:nth-child(2),
 .rtabs--preserve-sticky .rtabs__track--right .rtabs__page:nth-child(1) {
   display: none;
+}
+
+/* ===== Knockout bracket ===== */
+.bracket {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 16px;
+  scrollbar-width: thin;
+}
+.bracket__rail {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  width: max-content;
+  min-width: 100%;
+  padding: 16px 16px 24px;
+}
+.bracket__round {
+  width: min(390px, calc(100vw - 32px));
+  max-width: 390px;
+  flex: 0 0 min(390px, calc(100vw - 32px));
+  scroll-snap-align: start;
+}
+.bracket__title {
+  margin: 0;
+  padding: 0 8px 13px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+}
+.bracket__stage {
+  position: relative;
+  isolation: isolate;
+}
+.bracket__slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+.bracket__slot .card {
+  position: relative;
+  z-index: 1;
+}
+.bracket__slot .card--compact {
+  min-height: 92px;
+}
+.bracket__slot--linked::before,
+.bracket__slot--linked::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+.bracket__slot--linked::before {
+  left: -20px;
+  top: var(--connector-top);
+  width: 10px;
+  height: var(--connector-height);
+  border-top: 1.5px solid var(--ink-4);
+  border-bottom: 1.5px solid var(--ink-4);
+  border-right: 1.5px solid var(--ink-4);
+}
+.bracket__slot--linked::after {
+  left: -10px;
+  top: 56px;
+  width: 10px;
+  height: 1.5px;
+  background: var(--ink-4);
+}
+.bracket-empty {
+  margin: 24px 16px;
+  padding: 18px;
+  border: 1.5px dashed var(--ink-4);
+  border-radius: 18px;
+  color: var(--ink-2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bracket-empty strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+.bracket-empty span {
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 /* ===== Match Detail page ===== */

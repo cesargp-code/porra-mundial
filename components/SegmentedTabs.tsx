@@ -58,6 +58,8 @@ export function SegmentedTabs({
     startX: 0,
     startY: 0,
     tracking: false,
+    boundaryScrollLeft: 0,
+    startedInBoundary: false,
   });
 
   function selectTab(next: TabSide) {
@@ -147,12 +149,17 @@ export function SegmentedTabs({
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse") return;
+    const boundary = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-tab-swipe-boundary]",
+    );
 
     swipeRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       tracking: true,
+      boundaryScrollLeft: boundary?.scrollLeft ?? 0,
+      startedInBoundary: Boolean(boundary),
     };
   }
 
@@ -164,6 +171,14 @@ export function SegmentedTabs({
     const dy = event.clientY - swipe.startY;
 
     if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+
+    if (swipe.startedInBoundary && active === "right") {
+      const canReturnToLeftTab = swipe.boundaryScrollLeft <= 2 && dx > 0;
+      if (!canReturnToLeftTab) {
+        swipeRef.current.tracking = false;
+        return;
+      }
+    }
 
     if (dx < 0 && active === "left") selectTab("right");
     if (dx > 0 && active === "right") selectTab("left");

@@ -1,24 +1,22 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { BracketView } from "@/components/BracketView";
 import { DayHeader } from "@/components/DayHeader";
-import { GroupStandingsTable } from "@/components/GroupStandingsTable";
 import { MatchCard } from "@/components/MatchCard";
 import { MatchListScrollRestoration } from "@/components/MatchListScrollRestoration";
 import { MatchAutoRefresh } from "@/components/MatchAutoRefresh";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
-import { calculateGroupStandings } from "@/lib/groupStandings";
 import { dayKey } from "@/lib/format";
 import {
+  groupByBracketRound,
   groupByDay,
-  groupByTournamentGroup,
   toUiMatch,
   type MatchListContext,
 } from "@/lib/matches";
 import { rankPlayers } from "@/lib/ranking";
 import {
   getCurrentUserId,
-  getGroupStandings,
   getMatches,
   getMyPredictions,
   getPointsByUser,
@@ -42,14 +40,12 @@ export default async function MatchListPage({
     profiles,
     myPredictions,
     predictorCounts,
-    groupStandings,
     pointsByUser,
   ] = await Promise.all([
     getMatches(),
     getProfiles(),
     getMyPredictions(userId),
     getPredictorCounts(),
-    getGroupStandings(),
     getPointsByUser(),
   ]);
 
@@ -66,12 +62,7 @@ export default async function MatchListPage({
   const locatorDayKey = groups.find((group) => group.key >= todayKey)?.key;
   const entryDayKey =
     view === undefined ? locatorDayKey : undefined;
-  const tournamentGroups = groupByTournamentGroup(matches);
-  const standingsByGroup = new Map<string, typeof groupStandings>();
-  for (const standing of groupStandings) {
-    const key = standing.group_name.replace(/^group\s+/i, "").trim().toUpperCase();
-    standingsByGroup.set(key, [...(standingsByGroup.get(key) ?? []), standing]);
-  }
+  const bracketRounds = groupByBracketRound(matches);
 
   const ranked = rankPlayers(profiles, pointsByUser);
   const currentPlayer = ranked.find((player) => player.id === userId);
@@ -85,11 +76,11 @@ export default async function MatchListPage({
       <SegmentedTabs
         ariaLabel="Vista de partidos"
         leftLabel="Por fecha"
-        rightLabel="Por grupos"
-        defaultTab={view === "groups" ? "right" : "left"}
+        rightLabel="Por cruces"
+        defaultTab={view === "bracket" || view === "groups" ? "right" : "left"}
         queryParam="view"
         leftQueryValue="date"
-        rightQueryValue="groups"
+        rightQueryValue="bracket"
         leftLocatorDayKey={locatorDayKey}
         headerContent={
           <div className="appbar__row">
@@ -139,25 +130,7 @@ export default async function MatchListPage({
           </>
         }
         rightContent={
-          <>
-            {tournamentGroups.map((g) => (
-              <section key={g.key} className="day-group">
-                <DayHeader label={g.label} />
-                <GroupStandingsTable
-                  standings={calculateGroupStandings(
-                    standingsByGroup.get(g.key) ?? [],
-                    g.items
-                  )}
-                />
-                <div className="list">
-                  {g.items.map((m) => (
-                    <MatchCard key={m.id} match={m} timeFormat="compact-date-time" />
-                  ))}
-                </div>
-              </section>
-            ))}
-
-          </>
+          <BracketView rounds={bracketRounds} />
         }
       />
     </div>

@@ -7,6 +7,7 @@ export type CardState = "finished" | "live" | "predicted" | "missing" | "locked"
 
 export type UiMatch = {
   id: string;
+  matchNumber: number;
   state: CardState;
   homeCode: string | null;
   awayCode: string | null;
@@ -77,6 +78,7 @@ export function toUiMatch(row: DbMatch, ctx: MatchListContext = EMPTY_CONTEXT): 
 
   return {
     id: row.id,
+    matchNumber: row.match_number,
     state,
     homeCode: row.home_team_code,
     awayCode: row.away_team_code,
@@ -151,4 +153,34 @@ export function groupByDay(matches: UiMatch[]): DayGroup[] {
     cur.items.push(m);
   }
   return groups;
+}
+
+const KNOCKOUT_ROUNDS = [
+  { key: "R32", label: "Dieciseisavos" },
+  { key: "R16", label: "Octavos" },
+  { key: "QF", label: "Cuartos" },
+  { key: "SF", label: "Semis" },
+  { key: "3rd", label: "3er puesto" },
+  { key: "final", label: "Final" },
+] as const;
+
+export type BracketRound = {
+  key: string;
+  label: string;
+  items: UiMatch[];
+};
+
+export function groupByBracketRound(matches: UiMatch[]): BracketRound[] {
+  const byRound = new Map<string, UiMatch[]>();
+  for (const match of matches) {
+    if (match.round === "group") continue;
+    byRound.set(match.round, [...(byRound.get(match.round) ?? []), match]);
+  }
+
+  return KNOCKOUT_ROUNDS.map((round) => ({
+    ...round,
+    items: [...(byRound.get(round.key) ?? [])].sort(
+      (a, b) => a.matchNumber - b.matchNumber,
+    ),
+  })).filter((round) => round.items.length > 0);
 }
