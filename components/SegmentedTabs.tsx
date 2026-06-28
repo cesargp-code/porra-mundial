@@ -180,7 +180,7 @@ export function SegmentedTabs({
       }
     }
 
-    if (dx < 0 && active === "left") selectTab("right");
+    if (active === "left") selectTab("right");
     if (dx > 0 && active === "right") selectTab("left");
 
     swipeRef.current.tracking = false;
