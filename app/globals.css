@@ -1387,8 +1387,8 @@ a, button, [role="button"], [role="tab"], input, label, select, textarea, summar
 }
 .sheet__save {
   padding: 10px 16px;
-  background: var(--lime);
-  color: var(--ink);
+  background: var(--ink);
+  color: #fff;
   border: none;
   border-radius: 999px;
   font-family: inherit;
