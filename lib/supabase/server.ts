@@ -11,6 +11,7 @@ import type {
 } from "./types";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
+const PAGE_SIZE = 1000;
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -166,15 +167,29 @@ export async function getPredictorCounts(): Promise<Map<string, number>> {
 
 export async function getPointsByUser(): Promise<Map<string, number>> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("predictions")
-    .select("user_id, points");
-
-  if (error) throw new Error(`Failed to load points: ${error.message}`);
   const totals = new Map<string, number>();
-  for (const row of (data ?? []) as { user_id: string; points: number | null }[]) {
-    totals.set(row.user_id, (totals.get(row.user_id) ?? 0) + (row.points ?? 0));
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("predictions")
+      .select("id, user_id, points")
+      .order("id", { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) throw new Error(`Failed to load points: ${error.message}`);
+
+    const rows = (data ?? []) as {
+      user_id: string;
+      points: number | null;
+    }[];
+
+    for (const row of rows) {
+      totals.set(row.user_id, (totals.get(row.user_id) ?? 0) + (row.points ?? 0));
+    }
+
+    if (rows.length < PAGE_SIZE) break;
   }
+
   return totals;
 }
 
@@ -182,16 +197,31 @@ export async function getOtherPlayersPredictions(
   userId: string
 ): Promise<Pick<DbPrediction, "user_id" | "match_id" | "home_score" | "away_score">[]> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("predictions")
-    .select("user_id, match_id, home_score, away_score")
-    .neq("user_id", userId);
-
-  if (error) throw new Error(`Failed to load crowd predictions: ${error.message}`);
-  return (data ?? []) as Pick<
+  const rows: Pick<
     DbPrediction,
     "user_id" | "match_id" | "home_score" | "away_score"
-  >[];
+  >[] = [];
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("predictions")
+      .select("id, user_id, match_id, home_score, away_score")
+      .neq("user_id", userId)
+      .order("id", { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) throw new Error(`Failed to load crowd predictions: ${error.message}`);
+
+    const page = (data ?? []) as Pick<
+      DbPrediction,
+      "user_id" | "match_id" | "home_score" | "away_score"
+    >[];
+    rows.push(...page);
+
+    if (page.length < PAGE_SIZE) break;
+  }
+
+  return rows;
 }
 
 export async function getMyPredictions(userId: string): Promise<DbPrediction[]> {
