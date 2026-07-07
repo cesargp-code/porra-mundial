@@ -8,6 +8,7 @@ import { MatchListScrollRestoration } from "@/components/MatchListScrollRestorat
 import { MatchAutoRefresh } from "@/components/MatchAutoRefresh";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
 import { dayKey } from "@/lib/format";
+import { getNextMatchRefreshAt } from "@/lib/matchRefreshPolicy";
 import {
   groupByBracketRound,
   groupByDay,
@@ -56,7 +57,7 @@ export default async function MatchListPage({
   };
 
   const matches = rows.map((r) => toUiMatch(r, ctx));
-  const nextKickoff = matches.find((match) => match.kickoff.getTime() > Date.now())?.kickoff;
+  const nextRefreshAt = getNextMatchRefreshAt(rows);
   const groups = groupByDay(matches);
   const todayKey = dayKey(new Date());
   const locatorDayKey = groups.find((group) => group.key >= todayKey)?.key;
@@ -72,7 +73,7 @@ export default async function MatchListPage({
   return (
     <div className="screen" data-screen-label="01 Match List">
       <MatchListScrollRestoration targetDayKey={entryDayKey} />
-      <MatchAutoRefresh kickoff={nextKickoff?.toISOString()} />
+      <MatchAutoRefresh refreshAfter={nextRefreshAt} />
       <SegmentedTabs
         ariaLabel="Vista de partidos"
         leftLabel="Por fecha"

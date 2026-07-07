@@ -9,21 +9,30 @@ const REFRESH_DEBOUNCE_MS = 750;
 
 export function MatchAutoRefresh({
   matchId,
-  kickoff,
+  refreshAfter,
 }: {
   matchId?: string;
-  kickoff?: string;
+  refreshAfter?: string;
 }) {
   const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
     let refreshTimer: number | undefined;
-    let kickoffTimer: number | undefined;
+    let catchUpTimer: number | undefined;
+
+    const refreshAfterMs = refreshAfter
+      ? new Date(refreshAfter).getTime()
+      : Number.NaN;
 
     function refreshSoon() {
       if (refreshTimer) window.clearTimeout(refreshTimer);
       refreshTimer = window.setTimeout(() => router.refresh(), REFRESH_DEBOUNCE_MS);
+    }
+
+    function refreshIfSyncCouldHaveRun() {
+      if (!Number.isFinite(refreshAfterMs) || Date.now() < refreshAfterMs) return;
+      refreshSoon();
     }
 
     const filter = matchId
@@ -35,30 +44,30 @@ export function MatchAutoRefresh({
       .on("postgres_changes", filter, refreshSoon)
       .subscribe();
 
-    if (kickoff) {
-      const delay = new Date(kickoff).getTime() - Date.now();
+    if (Number.isFinite(refreshAfterMs)) {
+      const delay = refreshAfterMs - Date.now();
       if (delay > 0) {
-        kickoffTimer = window.setTimeout(refreshSoon, delay + 250);
+        catchUpTimer = window.setTimeout(refreshSoon, delay);
       }
     }
 
     function refreshWhenVisible() {
-      if (document.visibilityState === "visible") refreshSoon();
+      if (document.visibilityState === "visible") refreshIfSyncCouldHaveRun();
     }
 
-    window.addEventListener("focus", refreshSoon);
-    window.addEventListener("online", refreshSoon);
+    window.addEventListener("focus", refreshIfSyncCouldHaveRun);
+    window.addEventListener("online", refreshIfSyncCouldHaveRun);
     document.addEventListener("visibilitychange", refreshWhenVisible);
 
     return () => {
       if (refreshTimer) window.clearTimeout(refreshTimer);
-      if (kickoffTimer) window.clearTimeout(kickoffTimer);
-      window.removeEventListener("focus", refreshSoon);
-      window.removeEventListener("online", refreshSoon);
+      if (catchUpTimer) window.clearTimeout(catchUpTimer);
+      window.removeEventListener("focus", refreshIfSyncCouldHaveRun);
+      window.removeEventListener("online", refreshIfSyncCouldHaveRun);
       document.removeEventListener("visibilitychange", refreshWhenVisible);
       supabase.removeChannel(channel);
     };
-  }, [kickoff, matchId, router]);
+  }, [matchId, refreshAfter, router]);
 
   return null;
 }
