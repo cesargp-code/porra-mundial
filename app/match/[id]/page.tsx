@@ -12,6 +12,7 @@ import type {
   UpcomingPlay,
 } from "@/components/MatchDetail/types";
 import { venueLabel, whenLabel } from "@/lib/format";
+import { getNextMatchRefreshAt } from "@/lib/matchRefreshPolicy";
 import { toUiMatch } from "@/lib/matches";
 import { computePoints, getMatchMultiplier } from "@/lib/scoring";
 import {
@@ -183,10 +184,11 @@ export default async function MatchDetailPage({
   }`;
   const matchStats =
     detailState === "finished" && statsRow?.stats ? statsRow : null;
+  const nextRefreshAt = getNextMatchRefreshAt([row]);
 
   return (
     <div className="screen" data-screen-label={`Detail · ${detailState}`}>
-      <MatchAutoRefresh matchId={match.id} kickoff={match.kickoff.toISOString()} />
+      <MatchAutoRefresh matchId={match.id} refreshAfter={nextRefreshAt} />
       <DetailTopbar
         when={whenLabel(match.kickoff)}
         where={venueLabel(match.stadium, match.stadiumCity)}
